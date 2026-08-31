@@ -39,7 +39,7 @@
 **Interfaces:**
 - Produces: `DEFAULT_SEED: int`, `sum_to_shape(gradient: np.ndarray, shape: tuple[int, ...]) -> np.ndarray`, `Tensor(data, requires_grad=False)`, Tensor arithmetic, `matmul`, `sum`, `mean`, `exp`, `log`, `reshape`, indexing and `backward(gradient=None)`.
 
-- [ ] **Step 1: Write failing tests for graph traversal, gradient accumulation and broadcasting**
+- [x] **Step 1: Write failing tests for graph traversal, gradient accumulation and broadcasting**
 
 ```python
 class TensorTests(unittest.TestCase):
@@ -58,13 +58,13 @@ class TensorTests(unittest.TestCase):
         np.testing.assert_allclose(bias.grad, [2.0, 2.0, 2.0])
 ```
 
-- [ ] **Step 2: Run the focused tests and confirm missing imports fail**
+- [x] **Step 2: Run the focused tests and confirm missing imports fail**
 
 Run: `python3 -m unittest tests.test_tensor -v`
 
 Expected: FAIL because `neural_engine.core.tensor` does not exist.
 
-- [ ] **Step 3: Implement Tensor and shape reduction**
+- [x] **Step 3: Implement Tensor and shape reduction**
 
 Use a `set` of parent tensors, DFS topological ordering and reverse traversal. Before traversal, clear gradients only on non-leaf graph nodes so a repeated call recomputes the same local derivatives while leaf gradients remain cumulative. Each local `_backward` adds into parent gradients with `sum_to_shape`; scalar backward defaults to `np.ones_like(self.data)` and non-scalar outputs require an explicit matching gradient.
 
@@ -79,7 +79,7 @@ def sum_to_shape(gradient, shape):
     return result.reshape(shape)
 ```
 
-- [ ] **Step 4: Add numeric cases for divide, matmul, reductions, exp, log and indexing**
+- [x] **Step 4: Add numeric cases for divide, matmul, reductions, exp, log and indexing**
 
 Add these explicit expectations before implementing the corresponding operators:
 
@@ -101,13 +101,13 @@ def test_non_scalar_backward_requires_gradient(self):
         Tensor([1.0, 2.0], requires_grad=True).backward()
 ```
 
-- [ ] **Step 5: Run Task 1 tests**
+- [x] **Step 5: Run Task 1 tests**
 
 Run: `python3 -m unittest tests.test_tensor -v`
 
 Expected: all Tensor tests pass.
 
-- [ ] **Step 6: Commit Task 1**
+- [x] **Step 6: Commit Task 1**
 
 ```bash
 git add .gitignore requirements.txt neural_engine tests/test_tensor.py tests/__init__.py
@@ -131,7 +131,7 @@ git commit -m "feat: add tensor autograd engine"
 - Consumes: `Tensor`, `DEFAULT_SEED`.
 - Produces: `Module.parameters()`, `Sequential`, `Linear(in_features, out_features, initialization, rng)`, `ReLU`, `Sigmoid`, `Softmax(axis=-1)`, `binary_cross_entropy`, `cross_entropy`, `initialize_weights`.
 
-- [ ] **Step 1: Write failing initialization and module tests**
+- [x] **Step 1: Write failing initialization and module tests**
 
 ```python
 def test_initializers_have_expected_values_and_scales(self):
@@ -147,17 +147,17 @@ def test_sequential_collects_linear_parameters(self):
     self.assertEqual(len(model.parameters()), 4)
 ```
 
-- [ ] **Step 2: Verify Task 2 tests fail**
+- [x] **Step 2: Verify Task 2 tests fail**
 
 Run: `python3 -m unittest tests.test_nn -v`
 
 Expected: FAIL because the NN modules do not exist.
 
-- [ ] **Step 3: Implement initialization, Module, Sequential and Linear**
+- [x] **Step 3: Implement initialization, Module, Sequential and Linear**
 
 Use the four exact scales from the spec. `Module.__call__` delegates to `forward`; `Sequential.forward` applies layers in order; `Linear.forward(x)` returns `x @ weight + bias`.
 
-- [ ] **Step 4: Write activation and loss behavior tests**
+- [x] **Step 4: Write activation and loss behavior tests**
 
 ```python
 def test_softmax_rows_are_probabilities(self):
@@ -173,17 +173,17 @@ def test_cross_entropy_is_stable_and_backpropagates(self):
     np.testing.assert_allclose(logits.grad.sum(axis=1), [0.0], atol=1e-12)
 ```
 
-- [ ] **Step 5: Implement ReLU, Sigmoid, stable Softmax and fused losses**
+- [x] **Step 5: Implement ReLU, Sigmoid, stable Softmax and fused losses**
 
 Softmax subtracts row maxima and its local backward computes `p * (g - sum(g*p))`. Cross Entropy computes log-sum-exp from logits and creates a scalar Tensor whose backward adds `(probabilities - one_hot) / batch_size` to logits. Binary Cross Entropy clips only for forward stability and adds its exact derivative to the probability Tensor.
 
-- [ ] **Step 6: Run Tensor and NN tests**
+- [x] **Step 6: Run Tensor and NN tests**
 
 Run: `python3 -m unittest tests.test_tensor tests.test_nn -v`
 
 Expected: all tests pass.
 
-- [ ] **Step 7: Commit Task 2**
+- [x] **Step 7: Commit Task 2**
 
 ```bash
 git add neural_engine/nn tests/test_nn.py
@@ -205,7 +205,7 @@ git commit -m "feat: add neural network layers and losses"
 - Consumes: iterable of trainable `Tensor` parameters.
 - Produces: `Optimizer.zero_grad()`, `SGD(parameters, lr).step()`, `Adam(parameters, lr, betas, eps).step()`.
 
-- [ ] **Step 1: Write failing optimizer tests**
+- [x] **Step 1: Write failing optimizer tests**
 
 ```python
 def test_sgd_updates_parameter_and_zeroes_gradient(self):
@@ -224,23 +224,23 @@ def test_first_adam_step_matches_bias_corrected_formula(self):
     np.testing.assert_allclose(parameter.data, [1.9], rtol=1e-7)
 ```
 
-- [ ] **Step 2: Verify optimizer tests fail**
+- [x] **Step 2: Verify optimizer tests fail**
 
 Run: `python3 -m unittest tests.test_optim -v`
 
 Expected: FAIL because optimizer modules do not exist.
 
-- [ ] **Step 3: Implement Optimizer, SGD and Adam**
+- [x] **Step 3: Implement Optimizer, SGD and Adam**
 
 Validate positive learning rates, keep Adam `m`/`v` arrays aligned with parameter order, increment one global step per `step()`, and apply both bias corrections before updating data in-place.
 
-- [ ] **Step 4: Run all unit tests**
+- [x] **Step 4: Run all unit tests**
 
 Run: `python3 -m unittest discover -s tests -v`
 
 Expected: all current tests pass.
 
-- [ ] **Step 5: Commit Task 3**
+- [x] **Step 5: Commit Task 3**
 
 ```bash
 git add neural_engine/optim tests/test_optim.py
@@ -261,7 +261,7 @@ git commit -m "feat: add SGD and Adam optimizers"
 **Interfaces:**
 - Produces: `numerical_gradient(function, array, epsilon=1e-5)`, `relative_error(analytic, numerical)`, `run_gradient_checks() -> list[CheckResult]` and CLI exit status.
 
-- [ ] **Step 1: Write failing numerical-gradient tests**
+- [x] **Step 1: Write failing numerical-gradient tests**
 
 ```python
 def test_numerical_gradient_matches_quadratic(self):
@@ -276,21 +276,21 @@ def test_required_checks_meet_threshold(self):
     self.assertLessEqual(max(result.relative_error for result in results), 1e-7)
 ```
 
-- [ ] **Step 2: Verify Gradient Check tests fail**
+- [x] **Step 2: Verify Gradient Check tests fail**
 
 Run: `python3 -m unittest tests.test_gradient_check -v`
 
 Expected: FAIL because verification module does not exist.
 
-- [ ] **Step 3: Implement central differences and required cases**
+- [x] **Step 3: Implement central differences and required cases**
 
 Perturb one array element at a time and restore it after each pair. Use `max(abs(a-n) / max(1e-12, abs(a)+abs(n)))`. ReLU uses exactly `[-1.2, -0.3, 0.4, 1.5]` and no zero entry.
 
-- [ ] **Step 4: Implement CLI logging and nonzero failure exit**
+- [x] **Step 4: Implement CLI logging and nonzero failure exit**
 
 Format each row as `[PASS] <name>: relative_error=<scientific>` and finish with maximum error and threshold. Create the log parent directory, write the same text to `logs/gradient_check.log`, and return status 1 if any result exceeds `1e-7`.
 
-- [ ] **Step 5: Run Gradient Check and full tests**
+- [x] **Step 5: Run Gradient Check and full tests**
 
 Run: `python3 scripts/gradient_check.py`
 
@@ -300,7 +300,7 @@ Run: `python3 -m unittest discover -s tests -v`
 
 Expected: all tests pass.
 
-- [ ] **Step 6: Commit Task 4**
+- [x] **Step 6: Commit Task 4**
 
 ```bash
 git add neural_engine/verification.py scripts logs/.gitkeep tests/test_gradient_check.py
@@ -321,7 +321,7 @@ git commit -m "feat: add comprehensive gradient checking"
 **Interfaces:**
 - Produces: `build_xor_model(initialization, seed)`, `train_xor(initialization, epochs, seed) -> list[EpochMetrics]`, CLI log output and comparison CSV/PNG.
 
-- [ ] **Step 1: Write failing deterministic XOR tests**
+- [x] **Step 1: Write failing deterministic XOR tests**
 
 ```python
 def test_he_initialization_solves_xor_within_100_epochs(self):
@@ -334,21 +334,21 @@ def test_zero_initialization_stays_unsolved_for_50_epochs(self):
     self.assertGreater(history[-1].loss, 0.1)
 ```
 
-- [ ] **Step 2: Verify XOR tests fail**
+- [x] **Step 2: Verify XOR tests fail**
 
 Run: `python3 -m unittest tests.test_xor -v`
 
 Expected: FAIL because experiment functions do not exist.
 
-- [ ] **Step 3: Implement shared XOR training**
+- [x] **Step 3: Implement shared XOR training**
 
 Use a `2 → 8 → 1` ReLU/Sigmoid network, full-batch Adam, the fixed four XOR samples and one initialization argument. Record epoch, loss, thresholded accuracy, initialization and seed after every update. Tune only learning rate and hidden width if the deterministic test misses its declared criterion.
 
-- [ ] **Step 4: Implement XOR and comparison CLIs**
+- [x] **Step 4: Implement XOR and comparison CLIs**
 
 `train_xor.py` accepts `--initialization`, `--epochs`, `--seed`, `--log-file`. `compare_initialization.py` runs zero/random/he at the same seed, saves columns `epoch,loss,accuracy,initialization,seed` to `logs/initialization_comparison.csv`, and uses the non-interactive Matplotlib `Agg` backend for `figures/initialization_loss.png`.
 
-- [ ] **Step 5: Run required XOR evidence commands**
+- [x] **Step 5: Run required XOR evidence commands**
 
 Run: `python3 scripts/train_xor.py --initialization he --epochs 100 --log-file logs/xor_he.log`
 
@@ -362,7 +362,7 @@ Run: `python3 scripts/compare_initialization.py`
 
 Expected: CSV and nonempty PNG are created.
 
-- [ ] **Step 6: Commit Task 5**
+- [x] **Step 6: Commit Task 5**
 
 ```bash
 git add neural_engine/experiments.py scripts/train_xor.py scripts/compare_initialization.py tests/test_xor.py figures/.gitkeep
@@ -382,7 +382,7 @@ git commit -m "feat: add XOR initialization experiments"
 **Interfaces:**
 - Produces: `parse_idx(payload: bytes) -> np.ndarray`, `ensure_mnist(data_dir)`, `load_mnist(data_dir)`, `batch_iterator`, MNIST training CLI.
 
-- [ ] **Step 1: Write failing IDX parser tests**
+- [x] **Step 1: Write failing IDX parser tests**
 
 ```python
 def test_parse_idx_images(self):
@@ -396,25 +396,25 @@ def test_parse_idx_rejects_bad_magic(self):
         parse_idx(struct.pack(">II", 999, 0))
 ```
 
-- [ ] **Step 2: Verify MNIST loader tests fail**
+- [x] **Step 2: Verify MNIST loader tests fail**
 
 Run: `python3 -m unittest tests.test_mnist -v`
 
 Expected: FAIL because MNIST module does not exist.
 
-- [ ] **Step 3: Implement direct IDX parsing and caching**
+- [x] **Step 3: Implement direct IDX parsing and caching**
 
 Map the four canonical gzip filenames to their download URLs. Download to a temporary sibling file and rename only after success. Parse gzip content directly, accept magic 2051 images and 2049 labels, validate declared payload size exactly and raise descriptive `ValueError` for malformed data.
 
-- [ ] **Step 4: Add deterministic mini-batch and preprocessing tests**
+- [x] **Step 4: Add deterministic mini-batch and preprocessing tests**
 
 Assert float32 `[0,1]` flattened images, integer labels, no missing samples, and identical batch order for identical seeds.
 
-- [ ] **Step 5: Implement MNIST CLI**
+- [x] **Step 5: Implement MNIST CLI**
 
 Use `784 → 128 → 10`, ReLU, Cross Entropy, Adam, batch size 128 and one default epoch. Provide `--data-dir`, `--epochs`, `--batch-size`, `--learning-rate`, `--seed`, `--train-limit`, `--test-limit` and `--log-file`. Evaluate test accuracy without building a gradient graph by reading `.data`; exit nonzero when the full default run finishes below 80%.
 
-- [ ] **Step 6: Run offline unit tests and online training**
+- [x] **Step 6: Run offline unit tests and online training**
 
 Run: `python3 -m unittest tests.test_mnist -v`
 
@@ -424,7 +424,7 @@ Run: `python3 scripts/train_mnist.py --epochs 1`
 
 Expected: first execution downloads four gzip files, later execution reuses them, and test accuracy is `>= 80%`.
 
-- [ ] **Step 7: Commit Task 6**
+- [x] **Step 7: Commit Task 6**
 
 ```bash
 git add neural_engine/data scripts/train_mnist.py tests/test_mnist.py
@@ -450,7 +450,7 @@ git commit -m "feat: add direct MNIST training pipeline"
 - Consumes: all public APIs, scripts and actual experiment output.
 - Produces: reproducible repository documentation and checked-in evidence.
 
-- [ ] **Step 1: Regenerate every required artifact from a clean command sequence**
+- [x] **Step 1: Regenerate every required artifact from a clean command sequence**
 
 ```bash
 python3 scripts/gradient_check.py
@@ -460,19 +460,19 @@ python3 scripts/compare_initialization.py
 python3 scripts/train_mnist.py --epochs 1 --log-file logs/mnist.log
 ```
 
-- [ ] **Step 2: Write verification report from recorded values**
+- [x] **Step 2: Write verification report from recorded values**
 
 Include calculation graph order, Chain Rule, broadcasting reduction, central difference, relative-error formula, learning separation rationale, a table of every Gradient Check result and the actual maximum error.
 
-- [ ] **Step 3: Write experiment report from recorded values**
+- [x] **Step 3: Write experiment report from recorded values**
 
 Include XOR He success, Zero 50-epoch failure with both loss and accuracy, Random/He/Zero comparison, symmetry analysis, ReLU/He and Sigmoid/Xavier relationships, Adam as Momentum plus RMSProp families, and actual MNIST accuracy.
 
-- [ ] **Step 4: Write README and checklist**
+- [x] **Step 4: Write README and checklist**
 
 Open with overview, features, install, quick verification and training commands. Add architecture, Tensor/backward example, exact `zero_grad → forward → loss → backward → step` example, cumulative gradient policy, MNIST first-download/cache behavior, seed controls, actual result table, project tree and every mission checklist item.
 
-- [ ] **Step 5: Run complete verification**
+- [x] **Step 5: Run complete verification**
 
 Run: `python3 -m unittest discover -s tests -v`
 
@@ -484,7 +484,7 @@ Expected: maximum relative error `<= 1e-7`.
 
 Check: XOR logs meet their opposite success/failure criteria, MNIST log reports `>= 80%`, CSV has all five required columns, and PNG is nonempty.
 
-- [ ] **Step 6: Inspect repository diff and commit final documentation/artifacts**
+- [x] **Step 6: Inspect repository diff and commit final documentation/artifacts**
 
 ```bash
 git diff --check

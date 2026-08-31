@@ -1,0 +1,13 @@
+[PASS] add_broadcast: relative_error=1.438e-11
+[PASS] multiply: relative_error=2.969e-12
+[PASS] divide: relative_error=9.707e-11
+[PASS] matmul: relative_error=2.645e-11
+[PASS] sum_mean: relative_error=3.276e-12
+[PASS] Linear.input: relative_error=1.646e-11
+[PASS] Linear.weight: relative_error=8.377e-11
+[PASS] Linear.bias: relative_error=4.126e-12
+[PASS] ReLU: relative_error=8.210e-12
+[PASS] Sigmoid: relative_error=3.071e-11
+[PASS] Softmax: relative_error=8.684e-11
+Maximum relative error: 9.707e-11 (threshold: 1.0e-07)
+All gradient checks passed.

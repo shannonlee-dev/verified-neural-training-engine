@@ -1,0 +1,3 @@
+epoch,loss,accuracy,seed
+1,0.3562160949,0.9430,42
+Final: loss=0.356216, test_accuracy=94.30%, seed=42
