@@ -60,7 +60,7 @@ class TensorTests(unittest.TestCase):
 
 - [ ] **Step 2: Run the focused tests and confirm missing imports fail**
 
-Run: `python -m unittest tests.test_tensor -v`
+Run: `python3 -m unittest tests.test_tensor -v`
 
 Expected: FAIL because `neural_engine.core.tensor` does not exist.
 
@@ -103,7 +103,7 @@ def test_non_scalar_backward_requires_gradient(self):
 
 - [ ] **Step 5: Run Task 1 tests**
 
-Run: `python -m unittest tests.test_tensor -v`
+Run: `python3 -m unittest tests.test_tensor -v`
 
 Expected: all Tensor tests pass.
 
@@ -149,7 +149,7 @@ def test_sequential_collects_linear_parameters(self):
 
 - [ ] **Step 2: Verify Task 2 tests fail**
 
-Run: `python -m unittest tests.test_nn -v`
+Run: `python3 -m unittest tests.test_nn -v`
 
 Expected: FAIL because the NN modules do not exist.
 
@@ -179,7 +179,7 @@ Softmax subtracts row maxima and its local backward computes `p * (g - sum(g*p))
 
 - [ ] **Step 6: Run Tensor and NN tests**
 
-Run: `python -m unittest tests.test_tensor tests.test_nn -v`
+Run: `python3 -m unittest tests.test_tensor tests.test_nn -v`
 
 Expected: all tests pass.
 
@@ -226,7 +226,7 @@ def test_first_adam_step_matches_bias_corrected_formula(self):
 
 - [ ] **Step 2: Verify optimizer tests fail**
 
-Run: `python -m unittest tests.test_optim -v`
+Run: `python3 -m unittest tests.test_optim -v`
 
 Expected: FAIL because optimizer modules do not exist.
 
@@ -236,7 +236,7 @@ Validate positive learning rates, keep Adam `m`/`v` arrays aligned with paramete
 
 - [ ] **Step 4: Run all unit tests**
 
-Run: `python -m unittest discover -s tests -v`
+Run: `python3 -m unittest discover -s tests -v`
 
 Expected: all current tests pass.
 
@@ -278,7 +278,7 @@ def test_required_checks_meet_threshold(self):
 
 - [ ] **Step 2: Verify Gradient Check tests fail**
 
-Run: `python -m unittest tests.test_gradient_check -v`
+Run: `python3 -m unittest tests.test_gradient_check -v`
 
 Expected: FAIL because verification module does not exist.
 
@@ -292,11 +292,11 @@ Format each row as `[PASS] <name>: relative_error=<scientific>` and finish with 
 
 - [ ] **Step 5: Run Gradient Check and full tests**
 
-Run: `python scripts/gradient_check.py`
+Run: `python3 scripts/gradient_check.py`
 
 Expected: every line PASS and maximum relative error `<= 1e-7`.
 
-Run: `python -m unittest discover -s tests -v`
+Run: `python3 -m unittest discover -s tests -v`
 
 Expected: all tests pass.
 
@@ -336,7 +336,7 @@ def test_zero_initialization_stays_unsolved_for_50_epochs(self):
 
 - [ ] **Step 2: Verify XOR tests fail**
 
-Run: `python -m unittest tests.test_xor -v`
+Run: `python3 -m unittest tests.test_xor -v`
 
 Expected: FAIL because experiment functions do not exist.
 
@@ -350,15 +350,15 @@ Use a `2 → 8 → 1` ReLU/Sigmoid network, full-batch Adam, the fixed four XOR 
 
 - [ ] **Step 5: Run required XOR evidence commands**
 
-Run: `python scripts/train_xor.py --initialization he --epochs 100 --log-file logs/xor_he.log`
+Run: `python3 scripts/train_xor.py --initialization he --epochs 100 --log-file logs/xor_he.log`
 
 Expected: final loss `< 0.1` or accuracy `>= 95%`.
 
-Run: `python scripts/train_xor.py --initialization zero --epochs 50 --log-file logs/xor_zero.log`
+Run: `python3 scripts/train_xor.py --initialization zero --epochs 50 --log-file logs/xor_zero.log`
 
 Expected: final loss `> 0.1` and accuracy `< 95%`.
 
-Run: `python scripts/compare_initialization.py`
+Run: `python3 scripts/compare_initialization.py`
 
 Expected: CSV and nonempty PNG are created.
 
@@ -398,7 +398,7 @@ def test_parse_idx_rejects_bad_magic(self):
 
 - [ ] **Step 2: Verify MNIST loader tests fail**
 
-Run: `python -m unittest tests.test_mnist -v`
+Run: `python3 -m unittest tests.test_mnist -v`
 
 Expected: FAIL because MNIST module does not exist.
 
@@ -416,11 +416,11 @@ Use `784 → 128 → 10`, ReLU, Cross Entropy, Adam, batch size 128 and one defa
 
 - [ ] **Step 6: Run offline unit tests and online training**
 
-Run: `python -m unittest tests.test_mnist -v`
+Run: `python3 -m unittest tests.test_mnist -v`
 
 Expected: all parser and batching tests pass without network.
 
-Run: `python scripts/train_mnist.py --epochs 1`
+Run: `python3 scripts/train_mnist.py --epochs 1`
 
 Expected: first execution downloads four gzip files, later execution reuses them, and test accuracy is `>= 80%`.
 
@@ -453,11 +453,11 @@ git commit -m "feat: add direct MNIST training pipeline"
 - [ ] **Step 1: Regenerate every required artifact from a clean command sequence**
 
 ```bash
-python scripts/gradient_check.py
-python scripts/train_xor.py --initialization he --epochs 100 --log-file logs/xor_he.log
-python scripts/train_xor.py --initialization zero --epochs 50 --log-file logs/xor_zero.log
-python scripts/compare_initialization.py
-python scripts/train_mnist.py --epochs 1 --log-file logs/mnist.log
+python3 scripts/gradient_check.py
+python3 scripts/train_xor.py --initialization he --epochs 100 --log-file logs/xor_he.log
+python3 scripts/train_xor.py --initialization zero --epochs 50 --log-file logs/xor_zero.log
+python3 scripts/compare_initialization.py
+python3 scripts/train_mnist.py --epochs 1 --log-file logs/mnist.log
 ```
 
 - [ ] **Step 2: Write verification report from recorded values**
@@ -474,11 +474,11 @@ Open with overview, features, install, quick verification and training commands.
 
 - [ ] **Step 5: Run complete verification**
 
-Run: `python -m unittest discover -s tests -v`
+Run: `python3 -m unittest discover -s tests -v`
 
 Expected: all tests pass.
 
-Run: `python scripts/gradient_check.py`
+Run: `python3 scripts/gradient_check.py`
 
 Expected: maximum relative error `<= 1e-7`.
 
