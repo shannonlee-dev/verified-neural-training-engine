@@ -64,6 +64,8 @@ README.md
 
 `Tensor.backward()`는 현재 Tensor에서 깊이 우선 탐색으로 위상 순서를 만든 뒤, 출력 기울기를 설정하고 노드를 역순으로 순회하며 각 `_backward()`를 실행한다. 동일 Tensor로 들어오는 여러 경로의 기울기는 누적하여 Chain Rule을 적용한다.
 
+기울기는 의도적으로 누적한다. 같은 그래프에서 `backward()`를 다시 호출하면 leaf gradient에도 다시 누적되므로, 학습 단계마다 역전파 전에 `zero_grad()`를 호출해야 한다. 이 정책과 호출 순서를 README에 명시한다.
+
 NumPy broadcasting으로 확장된 피연산자의 기울기는 `sum_to_shape(gradient, original_shape)`로 원래 차원에 맞게 합산한다. 선행 차원을 먼저 합산하고, 크기가 1이었던 축은 `keepdims=True`로 합산한다.
 
 학습과 손실 계산에 필요한 연산은 사칙연산, 부호 반전, 거듭제곱, 행렬 곱, 합계, 평균, 지수, 로그와 인덱싱을 제공한다. 각 연산은 역전파 규칙과 브로드캐스팅 복원을 포함한다.
@@ -83,7 +85,7 @@ NumPy broadcasting으로 확장된 피연산자의 기울기는 `sum_to_shape(gr
 
 ## 최적화와 학습 순서
 
-`SGD`는 선택적 momentum 없이 기본 경사하강을 구현한다. `Adam`은 1차·2차 모멘트와 bias correction을 적용한다. 두 옵티마이저 모두 `step()`과 `zero_grad()`를 제공한다.
+`SGD`는 선택적 momentum 없이 기본 경사하강을 구현한다. `Adam`은 Momentum 계열의 1차 모멘트 `m`과 RMSProp 계열의 2차 모멘트 `v`를 결합하고 bias correction을 적용한다. 두 옵티마이저 모두 `step()`과 `zero_grad()`를 제공한다.
 
 모든 학습 스텝의 순서는 `optimizer.zero_grad()` → 순전파 → 손실 계산 → `loss.backward()` → `optimizer.step()`이다. 이 순서를 스크립트와 README 예제에 동일하게 사용하여 이전 스텝의 기울기가 섞이지 않게 한다.
 
@@ -93,7 +95,7 @@ NumPy broadcasting으로 확장된 피연산자의 기울기는 `sum_to_shape(gr
 
 중앙 차분 `(f(x + 1e-5) - f(x - 1e-5)) / (2e-5)`으로 수치 기울기를 구한다. 상대오차는 `max(abs(a-n) / max(1e-12, abs(a)+abs(n)))`로 계산하고 모든 항목이 `1e-7` 이하일 때만 스크립트가 성공한다.
 
-검증 대상은 덧셈·곱셈·나눗셈·행렬 곱·합계/평균과 Linear·ReLU·Sigmoid·Softmax이다. 브로드캐스팅 입력을 포함하며 Linear의 입력, weight와 bias를 각각 확인한다. 스크립트는 항목별 최대 상대오차와 최종 통과 여부를 터미널 및 `logs/gradient_check.log`에 기록한다.
+검증 대상은 덧셈·곱셈·나눗셈·행렬 곱·합계/평균과 Linear·ReLU·Sigmoid·Softmax이다. 브로드캐스팅 입력을 포함하며 Linear의 입력, weight와 bias를 각각 확인한다. ReLU는 미분 불가능한 0을 피하고 `[-1.2, -0.3, 0.4, 1.5]`처럼 0에서 충분히 떨어진 입력으로 검증한다. 스크립트는 항목별 최대 상대오차와 최종 통과 여부를 터미널 및 `logs/gradient_check.log`에 기록한다.
 
 단위 테스트는 계산 그래프 누적, 브로드캐스팅 축소, 옵티마이저 갱신, 초기화 분산, IDX 파싱 및 gradient check 허용오차를 다룬다.
 
@@ -105,19 +107,19 @@ XOR 모델은 `2 → hidden → 1` MLP, ReLU, Sigmoid/Binary Cross Entropy로 �
 - Zero: 50 epoch 뒤에도 대칭성 때문에 정확도가 XOR 해결 기준에 도달하지 못하고 손실 감소가 미미함
 - 비교 그래프: Zero, Random, He의 epoch별 loss를 한 그림에 표시
 
-`train_xor.py`는 초기화와 epoch를 CLI 인자로 받고 학습 로그를 저장한다. `compare_initialization.py`는 세 전략을 동일 조건으로 실행해 `figures/initialization_loss.png`, 원시 수치 로그와 요약을 만든다.
+`train_xor.py`는 초기화와 epoch를 CLI 인자로 받고 학습 로그를 저장한다. `compare_initialization.py`는 세 전략을 동일 조건으로 실행해 `figures/initialization_loss.png`, 원시 수치 로그와 요약을 만든다. CSV는 `epoch,loss,accuracy,initialization,seed`를 기록하여 Zero 초기화의 손실 정체와 정확도 실패를 함께 증명한다.
 
 ## MNIST 데이터 및 학습
 
 `train_mnist.py` 실행 시 네 IDX gzip 파일이 없으면 `urllib`로 다운로드하여 `data/`에 저장한다. `gzip`으로 읽은 바이트의 magic number, dtype, 차원과 크기를 검증하고 `struct`로 헤더를 직접 파싱하여 NumPy 배열로 변환한다. 다음 실행은 캐시를 재사용한다. 원본 데이터는 `.gitignore`로 제외한다.
 
-이미지는 `float32`로 변환해 `[0, 1]`로 정규화하고 평탄화한다. 모델은 `784 → 128 → 10`, ReLU, logits Cross Entropy이며 Adam과 직접 구현한 mini-batch iterator를 사용한다. 기본 실행은 전체 훈련 데이터 1 epoch 후 테스트 정확도 80% 이상을 목표로 하고 epoch별 loss·accuracy를 `logs/mnist.log`에 기록한다.
+이미지는 `float32`로 변환해 `[0, 1]`로 정규화하고 평탄화한다. 모델은 `784 → 128 → 10`, ReLU, logits Cross Entropy이며 Adam과 직접 구현한 mini-batch iterator를 사용한다. 기본 실행은 전체 훈련 데이터 1 epoch 후 테스트 정확도 80% 이상을 목표로 하고 epoch별 loss·accuracy를 `logs/mnist.log`에 기록한다. 이 80% 기준은 원문의 선택 성공 기준이지만, 프로젝트 자체 완료 조건으로 더 엄격하게 적용한다.
 
 다운로드 오류, 잘못된 IDX 헤더와 크기 불일치는 원인을 포함한 예외로 중단한다. 테스트는 작은 인메모리 gzip/IDX fixture로 파서를 검증하므로 네트워크에 의존하지 않는다.
 
 ## 산출물과 재현성
 
-`requirements.txt`에는 NumPy와 Matplotlib만 둔다. README는 프로젝트 개요, 설치, 실행 순서, 구조, Tensor와 학습 API 예제, seed 사용법, 결과 요약, 평가 체크리스트를 포함한다.
+`requirements.txt`에는 NumPy와 Matplotlib만 두며 테스트는 Python 표준 `unittest`로 실행한다. README는 프로젝트 개요, 설치, 실행 순서, 구조, Tensor와 학습 API 예제, 누적되는 `backward()`와 `zero_grad()` 정책, seed 사용법, 결과 요약, 평가 체크리스트를 포함한다.
 
 검증 리포트는 AutoGrad, 중앙 차분, 상대오차, Gradient Check를 학습과 분리하는 이유와 실제 결과를 설명한다. 실험 리포트는 Zero 대칭성, Random의 분산, ReLU와 He의 관계, Xavier 용도, Adam 원리 및 XOR/MNIST/초기화 비교 결과를 분석한다.
 
@@ -138,4 +140,3 @@ XOR 모델은 `2 → hidden → 1` MLP, ReLU, Sigmoid/Binary Cross Entropy로 �
 - Zero, Random, He 손실 비교 그래프 생성
 - MNIST 1 epoch 테스트 정확도 `>= 80%`
 - 자동 테스트 통과 및 모든 명령을 README만으로 재현 가능
-
