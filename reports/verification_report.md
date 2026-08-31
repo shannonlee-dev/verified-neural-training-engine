@@ -48,10 +48,11 @@ python3 scripts/gradient_check.py
 | ReLU | `8.210e-12` | PASS |
 | Sigmoid | `3.071e-11` | PASS |
 | Softmax | `8.684e-11` | PASS |
+| Binary Cross Entropy | `1.049e-10` | PASS |
+| Cross Entropy | `1.694e-11` | PASS |
 
-전체 최대 상대오차는 divide의 `9.707e-11`이며 허용 기준 `1e-7`보다 작다. 저장된 원본 출력은 `logs/gradient_check.log`에 있다.
+전체 최대 상대오차는 Binary Cross Entropy의 `1.049e-10`이며 허용 기준 `1e-7`보다 작다. 저장된 원본 출력은 `logs/gradient_check.log`에 있다.
 
 ## 결론
 
 주요 Tensor 연산, broadcasting 축소, Linear의 입력·weight·bias 및 모든 필수 활성화 레이어가 기준을 통과했다. 따라서 XOR와 MNIST 학습 결과를 역전파 수식 오류가 아닌 최적화·초기화 조건의 결과로 해석할 수 있다.
-

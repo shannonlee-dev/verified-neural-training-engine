@@ -1,6 +1,9 @@
 import unittest
+import tempfile
+from pathlib import Path
 
 from neural_engine.experiments import train_xor
+from scripts.compare_initialization import main as compare_initialization_main
 
 
 class XorExperimentTests(unittest.TestCase):
@@ -24,6 +27,27 @@ class XorExperimentTests(unittest.TestCase):
         second = train_xor("he", epochs=5, seed=7)
 
         self.assertEqual(first, second)
+
+    def test_comparison_csv_uses_portable_line_endings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            csv_file = root / "comparison.csv"
+            figure_file = root / "comparison.png"
+
+            status = compare_initialization_main(
+                [
+                    "--epochs",
+                    "1",
+                    "--csv-file",
+                    str(csv_file),
+                    "--figure-file",
+                    str(figure_file),
+                ]
+            )
+
+            self.assertEqual(status, 0)
+            self.assertNotIn(b"\r\n", csv_file.read_bytes())
+            self.assertTrue(figure_file.stat().st_size > 0)
 
 
 if __name__ == "__main__":

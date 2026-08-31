@@ -50,4 +50,3 @@ Adam은 Momentum 계열의 1차 모멘트 `m`으로 gradient 방향의 이동 �
 ## 결론
 
 Gradient Check를 먼저 통과한 동일 엔진에서 He XOR 학습과 MNIST 학습이 성공했고, 초기화만 Zero로 변경했을 때 XOR 실패가 재현됐다. 따라서 결과 차이는 역전파 구현 오류가 아니라 대칭성과 초기 신호 분산의 차이로 설명된다.
-

@@ -8,6 +8,7 @@ import numpy as np
 from neural_engine.core.tensor import Tensor
 from neural_engine.nn.activations import ReLU, Sigmoid, Softmax
 from neural_engine.nn.layers import Linear
+from neural_engine.nn.losses import binary_cross_entropy, cross_entropy
 
 
 GRADIENT_EPSILON = 1e-5
@@ -218,6 +219,49 @@ def run_gradient_checks() -> list[CheckResult]:
             softmax_input.grad.copy(),
             softmax_function,
             softmax_values,
+        )
+    )
+
+    probability_values = np.array([[0.2], [0.7], [0.4]])
+    binary_targets = np.array([[0.0], [1.0], [1.0]])
+    probabilities = Tensor(probability_values.copy(), requires_grad=True)
+    binary_cross_entropy(probabilities, binary_targets).backward()
+
+    def binary_cross_entropy_function(value: np.ndarray) -> float:
+        clipped = np.clip(value, 1e-12, 1.0 - 1e-12)
+        return float(
+            -np.mean(
+                binary_targets * np.log(clipped)
+                + (1.0 - binary_targets) * np.log(1.0 - clipped)
+            )
+        )
+
+    results.append(
+        _check(
+            "BinaryCrossEntropy",
+            probabilities.grad.copy(),
+            binary_cross_entropy_function,
+            probability_values,
+        )
+    )
+
+    logits_values = np.array([[0.2, -0.7, 1.1], [1.4, 0.3, -0.5]])
+    class_targets = np.array([2, 0])
+    logits = Tensor(logits_values.copy(), requires_grad=True)
+    cross_entropy(logits, class_targets).backward()
+
+    def cross_entropy_function(value: np.ndarray) -> float:
+        shifted = value - np.max(value, axis=1, keepdims=True)
+        log_partition = np.log(np.exp(shifted).sum(axis=1))
+        target_values = shifted[np.arange(len(value)), class_targets]
+        return float(np.mean(-target_values + log_partition))
+
+    results.append(
+        _check(
+            "CrossEntropy",
+            logits.grad.copy(),
+            cross_entropy_function,
+            logits_values,
         )
     )
     return results

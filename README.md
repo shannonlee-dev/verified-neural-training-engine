@@ -176,7 +176,7 @@ Adam은 Momentum 계열의 1차 모멘트 `m`과 RMSProp 계열의 2차 모멘�
 
 | 검증 | 결과 | 기준 | 판정 |
 |---|---:|---:|---|
-| 최대 Gradient Check 상대오차 | `9.707e-11` | `<= 1e-7` | PASS |
+| 최대 Gradient Check 상대오차 | `1.049e-10` | `<= 1e-7` | PASS |
 | XOR He, 100 epoch loss | `0.015496` | `< 0.1` | PASS |
 | XOR He, 100 epoch accuracy | `100%` | `>= 95%` | PASS |
 | XOR Zero, 50 epoch loss | `0.693147` | 감소 없음 | 실패 재현 |
@@ -200,4 +200,3 @@ Adam은 Momentum 계열의 1차 모멘트 `m`과 RMSProp 계열의 2차 모멘�
 - [x] IDX gzip 직접 파싱 MNIST 학습 스크립트와 로그
 - [x] MNIST 1 epoch 정확도 80% 이상
 - [x] 고정 seed, 설치·실행 방법, 검증·실험 리포트
-

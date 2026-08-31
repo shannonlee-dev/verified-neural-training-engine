@@ -41,6 +41,8 @@ class GradientCheckTests(unittest.TestCase):
             "ReLU",
             "Sigmoid",
             "Softmax",
+            "BinaryCrossEntropy",
+            "CrossEntropy",
         }
 
         self.assertTrue(required.issubset({result.name for result in results}))

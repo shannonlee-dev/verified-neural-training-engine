@@ -109,6 +109,22 @@ class NeuralNetworkTests(unittest.TestCase):
         self.assertAlmostEqual(float(loss.data), expected)
         np.testing.assert_allclose(probabilities.grad, [[-0.625], [2 / 3]])
 
+    def test_binary_cross_entropy_clipping_has_consistent_boundary_gradient(self):
+        probabilities = Tensor([[0.0], [1.0]], requires_grad=True)
+        targets = np.array([[0.0], [1.0]])
+
+        loss = binary_cross_entropy(probabilities, targets)
+        loss.backward()
+
+        self.assertTrue(np.isfinite(loss.data))
+        np.testing.assert_allclose(probabilities.grad, [[0.0], [0.0]])
+
+    def test_binary_cross_entropy_rejects_values_outside_probability_range(self):
+        probabilities = Tensor([[-0.1], [1.1]], requires_grad=True)
+
+        with self.assertRaisesRegex(ValueError, r"\[0, 1\]"):
+            binary_cross_entropy(probabilities, np.array([[0.0], [1.0]]))
+
 
 if __name__ == "__main__":
     unittest.main()

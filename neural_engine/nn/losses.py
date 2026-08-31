@@ -15,6 +15,8 @@ def binary_cross_entropy(
         raise ValueError(
             f"probability shape {probabilities.shape} does not match target shape {target_values.shape}"
         )
+    if np.any(probabilities.data < 0.0) or np.any(probabilities.data > 1.0):
+        raise ValueError("binary_cross_entropy probabilities must be in [0, 1]")
     clipped = np.clip(probabilities.data, epsilon, 1.0 - epsilon)
     loss_value = -np.mean(
         target_values * np.log(clipped)
@@ -31,6 +33,10 @@ def binary_cross_entropy(
         derivative = (
             -target_values / clipped + (1.0 - target_values) / (1.0 - clipped)
         ) / target_values.size
+        interior = (probabilities.data > epsilon) & (
+            probabilities.data < 1.0 - epsilon
+        )
+        derivative = np.where(interior, derivative, 0.0)
         probabilities._accumulate(output.grad * derivative)
 
     output._backward = backward

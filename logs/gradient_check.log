@@ -9,5 +9,7 @@
 [PASS] ReLU: relative_error=8.210e-12
 [PASS] Sigmoid: relative_error=3.071e-11
 [PASS] Softmax: relative_error=8.684e-11
-Maximum relative error: 9.707e-11 (threshold: 1.0e-07)
+[PASS] BinaryCrossEntropy: relative_error=1.049e-10
+[PASS] CrossEntropy: relative_error=1.694e-11
+Maximum relative error: 1.049e-10 (threshold: 1.0e-07)
 All gradient checks passed.

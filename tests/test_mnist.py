@@ -133,6 +133,29 @@ class MnistDataTests(unittest.TestCase):
         self.assertLess(history[-1].loss, history[0].loss)
         self.assertGreaterEqual(history[-1].accuracy, 0.75)
 
+    def test_training_rejects_empty_or_mismatched_splits(self):
+        inputs = np.ones((2, 4), dtype=np.float32)
+        targets = np.array([0, 1])
+
+        with self.assertRaisesRegex(ValueError, "must not be empty"):
+            train_mnist(
+                inputs[:0],
+                targets[:0],
+                inputs,
+                targets,
+                epochs=1,
+                class_count=2,
+            )
+        with self.assertRaisesRegex(ValueError, "same length"):
+            train_mnist(
+                inputs,
+                targets,
+                inputs,
+                targets[:1],
+                epochs=1,
+                class_count=2,
+            )
+
     def test_training_cli_uses_cached_idx_files_and_writes_log(self):
         images = np.array([[[0, 255], [0, 255]], [[255, 0], [255, 0]]], dtype=np.uint8)
         labels = np.array([0, 1], dtype=np.uint8)

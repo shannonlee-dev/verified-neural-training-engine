@@ -24,7 +24,7 @@ from neural_engine.config import DEFAULT_SEED
 from neural_engine.experiments import train_xor
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Compare XOR initializations")
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
@@ -35,7 +35,7 @@ def main() -> int:
     parser.add_argument(
         "--figure-file", type=Path, default=Path("figures/initialization_loss.png")
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     histories = {
         initialization: train_xor(
@@ -52,6 +52,7 @@ def main() -> int:
         writer = csv.DictWriter(
             handle,
             fieldnames=["epoch", "loss", "accuracy", "initialization", "seed"],
+            lineterminator="\n",
         )
         writer.writeheader()
         for initialization in ("zero", "random", "he"):

@@ -82,6 +82,10 @@ def train_mnist(
         raise ValueError("MNIST inputs must be flattened 2D arrays")
     if train_inputs.shape[1] != test_inputs.shape[1]:
         raise ValueError("train and test feature counts must match")
+    if len(train_inputs) == 0 or len(test_inputs) == 0:
+        raise ValueError("train and test splits must not be empty")
+    if len(train_inputs) != len(train_targets) or len(test_inputs) != len(test_targets):
+        raise ValueError("inputs and targets must have the same length")
 
     model = build_mnist_model(
         input_features=train_inputs.shape[1],
@@ -109,10 +113,13 @@ def train_mnist(
 
         predictions = predict_mnist(model, test_inputs)
         accuracy = float(np.mean(predictions == test_targets))
+        average_loss = weighted_loss / sample_count
+        if not np.isfinite(average_loss) or not np.isfinite(accuracy):
+            raise FloatingPointError("training produced a non-finite loss or accuracy")
         history.append(
             MnistEpochMetrics(
                 epoch=epoch,
-                loss=weighted_loss / sample_count,
+                loss=average_loss,
                 accuracy=accuracy,
                 seed=seed,
             )
