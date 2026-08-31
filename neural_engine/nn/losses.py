@@ -50,9 +50,11 @@ def cross_entropy(logits: Tensor, targets: np.ndarray) -> Tensor:
 
     shifted = logits.data - np.max(logits.data, axis=1, keepdims=True)
     exponentials = np.exp(shifted)
-    probabilities = exponentials / exponentials.sum(axis=1, keepdims=True)
+    partition = exponentials.sum(axis=1, keepdims=True)
+    probabilities = exponentials / partition
     batch_indices = np.arange(logits.shape[0])
-    loss_value = -np.log(probabilities[batch_indices, target_values]).mean()
+    target_logits = shifted[batch_indices, target_values]
+    loss_value = (-target_logits + np.log(partition[:, 0])).mean()
     output = Tensor(
         loss_value,
         logits.requires_grad,

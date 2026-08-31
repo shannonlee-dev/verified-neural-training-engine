@@ -89,6 +89,15 @@ class NeuralNetworkTests(unittest.TestCase):
         self.assertTrue(np.isfinite(logits.grad).all())
         np.testing.assert_allclose(logits.grad.sum(axis=1), [0.0], atol=1e-12)
 
+    def test_cross_entropy_remains_finite_for_underflowing_target_probability(self):
+        logits = Tensor([[-1000.0, 1000.0]], requires_grad=True)
+
+        loss = cross_entropy(logits, np.array([0]))
+        loss.backward()
+
+        self.assertAlmostEqual(float(loss.data), 2000.0)
+        np.testing.assert_allclose(logits.grad, [[-1.0, 1.0]])
+
     def test_binary_cross_entropy_matches_hand_calculation(self):
         probabilities = Tensor([[0.8], [0.25]], requires_grad=True)
         targets = np.array([[1.0], [0.0]])
