@@ -1,0 +1,70 @@
+from __future__ import annotations
+
+import numpy as np
+
+from neural_engine.core.tensor import Tensor
+
+
+def binary_cross_entropy(
+    probabilities: Tensor,
+    targets: np.ndarray,
+    epsilon: float = 1e-12,
+) -> Tensor:
+    target_values = np.asarray(targets, dtype=np.float64)
+    if probabilities.shape != target_values.shape:
+        raise ValueError(
+            f"probability shape {probabilities.shape} does not match target shape {target_values.shape}"
+        )
+    clipped = np.clip(probabilities.data, epsilon, 1.0 - epsilon)
+    loss_value = -np.mean(
+        target_values * np.log(clipped)
+        + (1.0 - target_values) * np.log(1.0 - clipped)
+    )
+    output = Tensor(
+        loss_value,
+        probabilities.requires_grad,
+        _children=(probabilities,),
+        _op="binary_cross_entropy",
+    )
+
+    def backward() -> None:
+        derivative = (
+            -target_values / clipped + (1.0 - target_values) / (1.0 - clipped)
+        ) / target_values.size
+        probabilities._accumulate(output.grad * derivative)
+
+    output._backward = backward
+    return output
+
+
+def cross_entropy(logits: Tensor, targets: np.ndarray) -> Tensor:
+    target_values = np.asarray(targets, dtype=np.int64)
+    if logits.ndim != 2:
+        raise ValueError(f"cross_entropy expects 2D logits, got {logits.shape}")
+    if target_values.shape != (logits.shape[0],):
+        raise ValueError(
+            f"targets must have shape ({logits.shape[0]},), got {target_values.shape}"
+        )
+    if np.any(target_values < 0) or np.any(target_values >= logits.shape[1]):
+        raise ValueError("target class is outside the logits class range")
+
+    shifted = logits.data - np.max(logits.data, axis=1, keepdims=True)
+    exponentials = np.exp(shifted)
+    probabilities = exponentials / exponentials.sum(axis=1, keepdims=True)
+    batch_indices = np.arange(logits.shape[0])
+    loss_value = -np.log(probabilities[batch_indices, target_values]).mean()
+    output = Tensor(
+        loss_value,
+        logits.requires_grad,
+        _children=(logits,),
+        _op="cross_entropy",
+    )
+
+    def backward() -> None:
+        gradient = probabilities.copy()
+        gradient[batch_indices, target_values] -= 1.0
+        gradient /= logits.shape[0]
+        logits._accumulate(output.grad * gradient)
+
+    output._backward = backward
+    return output
