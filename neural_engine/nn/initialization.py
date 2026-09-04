@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from neural_engine.config import DEFAULT_SEED
-
-
 INITIALIZATIONS = ("zero", "random", "he", "xavier")
 
 
@@ -23,7 +20,7 @@ def initialize_weights(
     if initialization == "zero":
         return np.zeros((in_features, out_features), dtype=np.float64)
 
-    generator = rng or np.random.default_rng(DEFAULT_SEED)
+    generator = rng if rng is not None else np.random.default_rng()
     scales = {
         "random": 1.0,
         "he": np.sqrt(2.0 / in_features),

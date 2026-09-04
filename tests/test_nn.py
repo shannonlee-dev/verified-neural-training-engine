@@ -28,6 +28,12 @@ class NeuralNetworkTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "initialization"):
             initialize_weights(2, 3, "unknown", np.random.default_rng(42))
 
+    def test_initializer_without_rng_does_not_restart_a_fixed_sequence(self):
+        first = initialize_weights(8, 8, "he")
+        second = initialize_weights(8, 8, "he")
+
+        self.assertFalse(np.array_equal(first, second))
+
     def test_sequential_collects_linear_parameters_and_runs_forward(self):
         rng = np.random.default_rng(42)
         model = Sequential(

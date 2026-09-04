@@ -2,7 +2,9 @@ import unittest
 import tempfile
 from pathlib import Path
 
-from neural_engine.experiments import train_xor
+import numpy as np
+
+from neural_engine.experiments import build_xor_model, train_xor
 from scripts.compare_initialization import main as compare_initialization_main
 
 
@@ -27,6 +29,20 @@ class XorExperimentTests(unittest.TestCase):
         second = train_xor("he", epochs=5, seed=7)
 
         self.assertEqual(first, second)
+
+    def test_model_seed_controls_weight_initialization(self):
+        first = build_xor_model(seed=7).parameters()
+        second = build_xor_model(seed=7).parameters()
+        different = build_xor_model(seed=8).parameters()
+
+        for first_parameter, second_parameter in zip(first, second):
+            np.testing.assert_array_equal(first_parameter.data, second_parameter.data)
+        self.assertTrue(
+            any(
+                not np.array_equal(first_parameter.data, different_parameter.data)
+                for first_parameter, different_parameter in zip(first, different)
+            )
+        )
 
     def test_comparison_csv_uses_portable_line_endings(self):
         with tempfile.TemporaryDirectory() as directory:

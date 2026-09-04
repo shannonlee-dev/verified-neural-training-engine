@@ -1,5 +1,7 @@
 # Verified Neural Training Engine
 
+[![CI](https://github.com/shannonlee-dev/verified-neural-training-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/shannonlee-dev/verified-neural-training-engine/actions/workflows/ci.yml)
+
 ## 프로젝트 소개
 
 NumPy만으로 구현한 동적 계산 그래프 기반 미니 딥러닝 프레임워크입니다. Tensor 연산이 순전파 중 계산 그래프를 만들고, `backward()`가 위상 정렬된 그래프를 역순으로 순회하며 Chain Rule로 기울기를 전달합니다.
@@ -79,6 +81,7 @@ python3 scripts/train_mnist.py --train-limit 1000 --test-limit 500
 ```
 
 모든 CLI의 기본 seed는 `42`이며 `--seed`로 변경할 수 있습니다.
+라이브러리에서는 모델 빌더의 `seed` 또는 `Linear`의 `rng` 인자로 난수 상태를 명시할 수 있으며, 같은 seed로 빌드한 모델은 같은 파라미터로 초기화됩니다.
 
 ## 사용 예시
 

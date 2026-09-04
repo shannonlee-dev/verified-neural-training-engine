@@ -6,6 +6,15 @@ from neural_engine.core.tensor import Tensor
 
 
 class TensorTests(unittest.TestCase):
+    def test_graph_parents_preserve_operation_input_order(self):
+        left = Tensor([1.0], requires_grad=True)
+        right = Tensor([2.0], requires_grad=True)
+
+        output = left * right
+
+        self.assertIsInstance(output._prev, tuple)
+        self.assertEqual(output._prev, (left, right))
+
     def test_backward_accumulates_through_shared_graph(self):
         x = Tensor([2.0], requires_grad=True)
         y = x * x + x
