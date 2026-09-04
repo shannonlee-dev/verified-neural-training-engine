@@ -19,13 +19,13 @@ class Tensor:
         data: ArrayLike,
         requires_grad: bool = False,
         *,
-        _children: tuple["Tensor", ...] = (),
+        _parents: tuple["Tensor", ...] = (),
         _op: str = "",
     ) -> None:
         self.data = np.asarray(data, dtype=np.float64)
         self.requires_grad = bool(requires_grad)
         self.grad = np.zeros_like(self.data) if self.requires_grad else None
-        self._prev = tuple(_children)
+        self._prev = tuple(_parents)
         self._op = _op
         self._backward: Callable[[], None] = lambda: None
 
@@ -92,7 +92,7 @@ class Tensor:
         output = Tensor(
             self.data + other.data,
             self.requires_grad or other.requires_grad,
-            _children=(self, other),
+            _parents=(self, other),
             _op="add",
         )
 
@@ -110,7 +110,7 @@ class Tensor:
         output = Tensor(
             -self.data,
             self.requires_grad,
-            _children=(self,),
+            _parents=(self,),
             _op="neg",
         )
 
@@ -131,7 +131,7 @@ class Tensor:
         output = Tensor(
             self.data * other.data,
             self.requires_grad or other.requires_grad,
-            _children=(self, other),
+            _parents=(self, other),
             _op="multiply",
         )
 
@@ -151,7 +151,7 @@ class Tensor:
         output = Tensor(
             self.data**exponent,
             self.requires_grad,
-            _children=(self,),
+            _parents=(self,),
             _op="power",
         )
 
@@ -166,7 +166,7 @@ class Tensor:
         output = Tensor(
             self.data / other.data,
             self.requires_grad or other.requires_grad,
-            _children=(self, other),
+            _parents=(self, other),
             _op="divide",
         )
 
@@ -187,7 +187,7 @@ class Tensor:
         output = Tensor(
             self.data @ other.data,
             self.requires_grad or other.requires_grad,
-            _children=(self, other),
+            _parents=(self, other),
             _op="matmul",
         )
 
@@ -206,7 +206,7 @@ class Tensor:
         output = Tensor(
             self.data.sum(axis=axis, keepdims=keepdims),
             self.requires_grad,
-            _children=(self,),
+            _parents=(self,),
             _op="sum",
         )
 
@@ -236,7 +236,7 @@ class Tensor:
 
     def exp(self) -> "Tensor":
         data = np.exp(self.data)
-        output = Tensor(data, self.requires_grad, _children=(self,), _op="exp")
+        output = Tensor(data, self.requires_grad, _parents=(self,), _op="exp")
 
         def backward() -> None:
             self._accumulate(output.grad * data)
@@ -248,7 +248,7 @@ class Tensor:
         output = Tensor(
             np.log(self.data),
             self.requires_grad,
-            _children=(self,),
+            _parents=(self,),
             _op="log",
         )
 
@@ -263,7 +263,7 @@ class Tensor:
         output = Tensor(
             self.data.reshape(target),
             self.requires_grad,
-            _children=(self,),
+            _parents=(self,),
             _op="reshape",
         )
 
@@ -277,7 +277,7 @@ class Tensor:
         output = Tensor(
             self.data[index],
             self.requires_grad,
-            _children=(self,),
+            _parents=(self,),
             _op="slice",
         )
 

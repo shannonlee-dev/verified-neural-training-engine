@@ -68,13 +68,13 @@ python3 scripts/train_xor.py --initialization zero --epochs 50 --log-file logs/x
 # 4. Zero / Random / He 비교 CSV와 그래프 생성
 python3 scripts/compare_initialization.py
 
-# 5. MNIST 전체 데이터 1 epoch 학습
+# 5. MNIST 전체 데이터 1 epoch 학습 (정확도 목표 95%)
 python3 scripts/train_mnist.py --epochs 1 --log-file logs/mnist.log
 ```
 
 MNIST 최초 실행은 네 개의 표준 IDX gzip 파일을 `data/`에 내려받습니다. `gzip` 압축을 읽고 IDX magic number·차원·payload 크기를 직접 검증해 NumPy 배열로 변환합니다. 이후 실행은 캐시를 재사용하며 `data/*.gz`는 Git에서 제외됩니다.
 
-빠른 파이프라인 확인에는 제한 옵션을 사용할 수 있습니다. 제한 실행은 80% 완료 기준 판정에서 제외됩니다.
+빠른 파이프라인 확인에는 제한 옵션을 사용할 수 있습니다. 제한 실행은 95% 완료 기준 판정에서 제외됩니다.
 
 ```bash
 python3 scripts/train_mnist.py --train-limit 1000 --test-limit 500
@@ -184,7 +184,7 @@ Adam은 Momentum 계열의 1차 모멘트 `m`과 RMSProp 계열의 2차 모멘�
 | XOR He, 100 epoch accuracy | `100%` | `>= 95%` | PASS |
 | XOR Zero, 50 epoch loss | `0.693147` | 감소 없음 | 실패 재현 |
 | XOR Zero, 50 epoch accuracy | `50%` | `< 95%` | 실패 재현 |
-| MNIST, 1 epoch test accuracy | `94.30%` | `>= 80%` | PASS |
+| MNIST, 1 epoch test accuracy | `95.21%` | `>= 95%` | PASS |
 
 상세 수치는 `reports/verification_report.md`, `reports/experiment_report.md`와 `logs/`에서 확인할 수 있습니다.
 
@@ -201,5 +201,5 @@ Adam은 Momentum 계열의 1차 모멘트 `m`과 RMSProp 계열의 2차 모멘�
 - [x] Zero 초기화 XOR 50 epoch 실패 재현
 - [x] Zero/Random/He Loss 비교 CSV와 `figures/initialization_loss.png`
 - [x] IDX gzip 직접 파싱 MNIST 학습 스크립트와 로그
-- [x] MNIST 1 epoch 정확도 80% 이상
+- [x] MNIST 1 epoch 정확도 95% 이상
 - [x] 고정 seed, 설치·실행 방법, 검증·실험 리포트

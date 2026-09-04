@@ -24,7 +24,7 @@ class MnistEpochMetrics:
 
 def build_mnist_model(
     input_features: int = 784,
-    hidden_features: int = 128,
+    hidden_features: int = 256,
     class_count: int = 10,
     seed: int = DEFAULT_SEED,
 ) -> Sequential:

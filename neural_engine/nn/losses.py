@@ -25,7 +25,7 @@ def binary_cross_entropy(
     output = Tensor(
         loss_value,
         probabilities.requires_grad,
-        _children=(probabilities,),
+        _parents=(probabilities,),
         _op="binary_cross_entropy",
     )
 
@@ -64,7 +64,7 @@ def cross_entropy(logits: Tensor, targets: np.ndarray) -> Tensor:
     output = Tensor(
         loss_value,
         logits.requires_grad,
-        _children=(logits,),
+        _parents=(logits,),
         _op="cross_entropy",
     )
 

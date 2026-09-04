@@ -11,7 +11,7 @@ class ReLU(Module):
         output = Tensor(
             np.maximum(inputs.data, 0.0),
             inputs.requires_grad,
-            _children=(inputs,),
+            _parents=(inputs,),
             _op="relu",
         )
 
@@ -32,7 +32,7 @@ class Sigmoid(Module):
         output = Tensor(
             values,
             inputs.requires_grad,
-            _children=(inputs,),
+            _parents=(inputs,),
             _op="sigmoid",
         )
 
@@ -54,7 +54,7 @@ class Softmax(Module):
         output = Tensor(
             probabilities,
             inputs.requires_grad,
-            _children=(inputs,),
+            _parents=(inputs,),
             _op="softmax",
         )
 

@@ -41,11 +41,11 @@ Adam은 Momentum 계열의 1차 모멘트 `m`으로 gradient 방향의 이동 �
 - 데이터: 표준 MNIST IDX gzip 60,000 train / 10,000 test
 - 로딩: `urllib` 다운로드, `gzip` 해제, IDX 헤더·payload 직접 파싱
 - 전처리: `float32`, `[0, 1]` 정규화, `784`차원 평탄화
-- 모델: `784 → 128 → 10`, ReLU, logits Cross Entropy
+- 모델: `784 → 256 → 10`, ReLU, logits Cross Entropy
 - 옵티마이저: Adam, learning rate `0.001`, batch size `128`
-- 결과: 1 epoch train loss `0.356216`, test accuracy `94.30%`
+- 결과: 1 epoch train loss `0.305141`, test accuracy `95.21%`
 
-원문의 1 epoch 80%는 선택 성공 기준이지만 이 프로젝트의 완료 기준으로 적용했다. 측정 정확도 `94.30%`가 이를 통과했다. 첫 실행에서 내려받은 gzip은 `data/`에 캐시되었고, 후속 실행에서 캐시 재사용 메시지를 확인했다.
+기존 `784 → 128 → 10` 모델은 1 epoch에서 `94.30%`에 머물렀다. 은닉층을 `256`개로 늘려 같은 seed와 학습 설정으로 재실험한 결과 `95.21%`를 기록해 Acc `>= 95%` 목표를 통과했다. 첫 실행에서 내려받은 gzip은 `data/`에 캐시되었고, 후속 실행에서 캐시 재사용 메시지를 확인했다.
 
 ## 결론
 

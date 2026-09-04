@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--learning-rate", type=float, default=0.001)
-    parser.add_argument("--hidden-features", type=int, default=128)
+    parser.add_argument("--hidden-features", type=int, default=256)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--train-limit", type=int)
     parser.add_argument("--test-limit", type=int)
@@ -63,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Log: {args.log_file}")
 
     full_run = args.train_limit is None and args.test_limit is None
-    return 1 if full_run and final.accuracy < 0.80 else 0
+    return 1 if full_run and final.accuracy < 0.95 else 0
 
 
 if __name__ == "__main__":
