@@ -35,13 +35,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = vars(build_parser().parse_args(argv))
-    runner = args.pop("run")
-    args.pop("command", None)
-    args.pop("training_command", None)
-    args.pop("verification_command", None)
-    args.pop("comparison_command", None)
-    return runner(argparse.Namespace(**args))
+    args = build_parser().parse_args(argv)
+    return args.run(args)
 
 
 if __name__ == "__main__":
