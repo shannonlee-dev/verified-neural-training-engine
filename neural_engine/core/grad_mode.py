@@ -1,4 +1,4 @@
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 
@@ -11,7 +11,7 @@ def is_grad_enabled() -> bool:
 
 
 @contextmanager
-def no_grad() -> Iterator[None]:
+def no_grad() -> Generator[None, None, None]:
     token = _grad_enabled.set(False)
     try:
         yield

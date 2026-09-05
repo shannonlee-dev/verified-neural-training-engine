@@ -16,7 +16,7 @@ class TensorTests(unittest.TestCase):
             y = x * x
             self.assertFalse(y.requires_grad)
             self.assertIsNone(y.grad)
-            self.assertEqual(y._prev, ())
+            self.assertEqual(y._parents, ())
             self.assertIsNone(y._backward.__closure__)
 
         self.assertTrue(x.requires_grad)
@@ -42,7 +42,7 @@ class TensorTests(unittest.TestCase):
         self.assertTrue(leaf.requires_grad)
         self.assertIsNotNone(leaf.grad)
         self.assertFalse(result.requires_grad)
-        self.assertEqual(result._prev, ())
+        self.assertEqual(result._parents, ())
 
     def test_no_grad_detaches_tensor_operations_and_nn_outputs(self):
         x = Tensor([[1.0, 2.0], [3.0, 4.0]], requires_grad=True)
@@ -74,7 +74,7 @@ class TensorTests(unittest.TestCase):
             with self.subTest(operation=output._op):
                 self.assertFalse(output.requires_grad)
                 self.assertIsNone(output.grad)
-                self.assertEqual(output._prev, ())
+                self.assertEqual(output._parents, ())
                 self.assertIsNone(output._backward.__closure__)
 
     def test_zero_power_has_zero_gradient_at_zero(self):
@@ -101,8 +101,8 @@ class TensorTests(unittest.TestCase):
 
         output = left * right
 
-        self.assertIsInstance(output._prev, tuple)
-        self.assertEqual(output._prev, (left, right))
+        self.assertIsInstance(output._parents, tuple)
+        self.assertEqual(output._parents, (left, right))
 
     def test_backward_accumulates_through_shared_graph(self):
         x = Tensor([2.0], requires_grad=True)

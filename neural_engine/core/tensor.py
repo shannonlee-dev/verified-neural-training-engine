@@ -28,7 +28,7 @@ class Tensor:
             not _parents or is_grad_enabled()
         )
         self.grad = np.zeros_like(self.data) if self.requires_grad else None
-        self._prev = tuple(_parents) if self.requires_grad else ()
+        self._parents = tuple(_parents) if self.requires_grad else ()
         self._op = _op
         self._backward: Callable[[], None] = lambda: None
 
@@ -73,16 +73,16 @@ class Tensor:
             if node in visited:
                 return
             visited.add(node)
-            for parent in node._prev:
+            for parent in node._parents:
                 visit(parent)
             topological.append(node)
 
         visit(self)
         for node in topological:
-            if node._prev and node.requires_grad:
+            if node._parents and node.requires_grad:
                 node.grad = np.zeros_like(node.data)
 
-        if self._prev:
+        if self._parents:
             self.grad = seed_gradient.copy()
         else:
             self.grad += seed_gradient
