@@ -18,6 +18,7 @@ NumPy만으로 구현한 동적 계산 그래프 기반 미니 딥러닝 프레�
 - 주요 Tensor 연산 및 모든 필수 레이어 Gradient Check
 - XOR He 성공과 Zero 50 epoch 실패 재현
 - MNIST IDX gzip 자동 다운로드, 직접 바이너리 파싱과 캐시
+- `no_grad()`를 통한 추론 시 계산 그래프 기록 중단
 - 고정 seed, 실행 로그, 비교 CSV·그래프와 검증·실험 리포트
 
 ## 아키텍처
@@ -80,7 +81,7 @@ MNIST 최초 실행은 네 개의 표준 IDX gzip 파일을 `data/`에 내려받
 python3 scripts/train_mnist.py --train-limit 1000 --test-limit 500
 ```
 
-모든 CLI의 기본 seed는 `42`이며 `--seed`로 변경할 수 있습니다.
+모든 CLI의 기본 seed는 `42`이며 `--seed`로 변경할 수 있습니다. MNIST CLI와 Python API의 기본 모델은 `784 → 256 → 10`이며, `--hidden-features` 또는 `hidden_features`로 은닉층 크기를 변경할 수 있습니다.
 라이브러리에서는 모델 빌더의 `seed` 또는 `Linear`의 `rng` 인자로 난수 상태를 명시할 수 있으며, 같은 seed로 빌드한 모델은 같은 파라미터로 초기화됩니다.
 
 ## 사용 예시
@@ -100,6 +101,17 @@ print(w.grad)  # [[1.], [2.]]
 ```
 
 `backward()`는 leaf gradient를 누적합니다. 같은 그래프에서 두 번 호출하면 기울기도 두 번 누적됩니다. 학습에서는 이전 step의 기울기를 반드시 먼저 초기화해야 합니다.
+
+추론처럼 새 계산 그래프가 필요하지 않은 경우에는 `no_grad()`를 사용합니다.
+
+```python
+from neural_engine import no_grad
+
+with no_grad():
+    logits = model(inputs)
+```
+
+`no_grad()`는 컨텍스트 안에서 새로 만들어지는 연산 결과의 그래프 기록을 중단하고, 컨텍스트가 끝나면 원래 상태로 돌아갑니다. 파라미터 자체의 `requires_grad`는 변경하지 않으며, `train()`·`eval()`이나 Dropout 제어를 제공하는 API는 아닙니다.
 
 ### 모델 학습 순서
 

@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 
+from neural_engine.core.grad_mode import is_grad_enabled
 from neural_engine.core.utils import sum_to_shape
 
 
@@ -23,9 +24,11 @@ class Tensor:
         _op: str = "",
     ) -> None:
         self.data = np.asarray(data, dtype=np.float64)
-        self.requires_grad = bool(requires_grad)
+        self.requires_grad = bool(requires_grad) and (
+            not _parents or is_grad_enabled()
+        )
         self.grad = np.zeros_like(self.data) if self.requires_grad else None
-        self._prev = tuple(_parents)
+        self._prev = tuple(_parents) if self.requires_grad else ()
         self._op = _op
         self._backward: Callable[[], None] = lambda: None
 
@@ -100,7 +103,8 @@ class Tensor:
             self._accumulate(output.grad)
             other._accumulate(output.grad)
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def __radd__(self, other: ArrayLike) -> "Tensor":
@@ -117,7 +121,8 @@ class Tensor:
         def backward() -> None:
             self._accumulate(-output.grad)
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def __sub__(self, other: ArrayLike) -> "Tensor":
@@ -139,7 +144,8 @@ class Tensor:
             self._accumulate(output.grad * other.data)
             other._accumulate(output.grad * self.data)
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def __rmul__(self, other: ArrayLike) -> "Tensor":
@@ -156,9 +162,12 @@ class Tensor:
         )
 
         def backward() -> None:
+            if exponent == 0:
+                return
             self._accumulate(output.grad * exponent * self.data ** (exponent - 1))
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def __truediv__(self, other: ArrayLike) -> "Tensor":
@@ -174,7 +183,8 @@ class Tensor:
             self._accumulate(output.grad / other.data)
             other._accumulate(-output.grad * self.data / (other.data**2))
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def __rtruediv__(self, other: ArrayLike) -> "Tensor":
@@ -195,7 +205,8 @@ class Tensor:
             self._accumulate(output.grad @ other.data.T)
             other._accumulate(self.data.T @ output.grad)
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def sum(
@@ -219,7 +230,8 @@ class Tensor:
                     gradient = np.expand_dims(gradient, axis=item)
             self._accumulate(np.broadcast_to(gradient, self.shape))
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def mean(
@@ -241,7 +253,8 @@ class Tensor:
         def backward() -> None:
             self._accumulate(output.grad * data)
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def log(self) -> "Tensor":
@@ -255,7 +268,8 @@ class Tensor:
         def backward() -> None:
             self._accumulate(output.grad / self.data)
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def reshape(self, *shape: int | tuple[int, ...]) -> "Tensor":
@@ -270,7 +284,8 @@ class Tensor:
         def backward() -> None:
             self._accumulate(output.grad.reshape(self.shape))
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def __getitem__(self, index: Any) -> "Tensor":
@@ -287,7 +302,8 @@ class Tensor:
                 np.add.at(gradient, index, output.grad)
                 self.grad += gradient
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
     def __repr__(self) -> str:

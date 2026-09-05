@@ -2,10 +2,99 @@ import unittest
 
 import numpy as np
 
+from neural_engine import no_grad
 from neural_engine.core.tensor import Tensor
+from neural_engine.nn.activations import ReLU, Sigmoid, Softmax
+from neural_engine.nn.losses import binary_cross_entropy, cross_entropy
 
 
 class TensorTests(unittest.TestCase):
+    def test_no_grad_detaches_results_and_restores_tracking(self):
+        x = Tensor([2.0], requires_grad=True)
+
+        with no_grad():
+            y = x * x
+            self.assertFalse(y.requires_grad)
+            self.assertIsNone(y.grad)
+            self.assertEqual(y._prev, ())
+            self.assertIsNone(y._backward.__closure__)
+
+        self.assertTrue(x.requires_grad)
+        (x * x).sum().backward()
+        np.testing.assert_array_equal(x.grad, [4.0])
+
+    def test_no_grad_restores_outer_state_after_exception(self):
+        x = Tensor([2.0], requires_grad=True)
+
+        with no_grad():
+            with self.assertRaisesRegex(RuntimeError, "probe"):
+                with no_grad():
+                    raise RuntimeError("probe")
+            self.assertFalse((x + 1).requires_grad)
+
+        self.assertTrue((x + 1).requires_grad)
+
+    def test_no_grad_preserves_explicit_leaf_requires_grad(self):
+        with no_grad():
+            leaf = Tensor([2.0], requires_grad=True)
+            result = leaf + 1.0
+
+        self.assertTrue(leaf.requires_grad)
+        self.assertIsNotNone(leaf.grad)
+        self.assertFalse(result.requires_grad)
+        self.assertEqual(result._prev, ())
+
+    def test_no_grad_detaches_tensor_operations_and_nn_outputs(self):
+        x = Tensor([[1.0, 2.0], [3.0, 4.0]], requires_grad=True)
+        matrix = Tensor([[1.0, 0.0], [0.0, 1.0]], requires_grad=True)
+
+        with no_grad():
+            outputs = [
+                x + 1.0,
+                x - 1.0,
+                -x,
+                x * 2.0,
+                x / 2.0,
+                x**2,
+                x @ matrix,
+                x.sum(),
+                x.mean(),
+                x.exp(),
+                x.log(),
+                x.reshape(4),
+                x[[0]],
+                ReLU()(x),
+                Sigmoid()(x),
+                Softmax()(x),
+                binary_cross_entropy(Sigmoid()(x), np.ones_like(x.data)),
+                cross_entropy(x, np.array([0, 1])),
+            ]
+
+        for output in outputs:
+            with self.subTest(operation=output._op):
+                self.assertFalse(output.requires_grad)
+                self.assertIsNone(output.grad)
+                self.assertEqual(output._prev, ())
+                self.assertIsNone(output._backward.__closure__)
+
+    def test_zero_power_has_zero_gradient_at_zero(self):
+        x = Tensor([0.0, -2.0, 3.0], requires_grad=True)
+
+        with np.errstate(divide="raise", invalid="raise"):
+            y = x**0
+            np.testing.assert_array_equal(y.data, np.ones(3))
+            y.backward(np.array([2.0, -1.0, 4.0]))
+
+        np.testing.assert_array_equal(x.grad, np.zeros(3))
+
+    def test_zero_power_preserves_accumulated_leaf_gradient(self):
+        x = Tensor([0.0], requires_grad=True)
+
+        x.sum().backward()
+        (x**0).sum().backward()
+
+        np.testing.assert_array_equal(x.grad, [1.0])
+
     def test_graph_parents_preserve_operation_input_order(self):
         left = Tensor([1.0], requires_grad=True)
         right = Tensor([2.0], requires_grad=True)

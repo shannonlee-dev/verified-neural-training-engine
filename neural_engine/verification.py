@@ -34,11 +34,13 @@ def numerical_gradient(
     while not iterator.finished:
         index = iterator.multi_index
         original = float(array[index])
-        array[index] = original + epsilon
-        positive = float(function(array))
-        array[index] = original - epsilon
-        negative = float(function(array))
-        array[index] = original
+        try:
+            array[index] = original + epsilon
+            positive = float(function(array))
+            array[index] = original - epsilon
+            negative = float(function(array))
+        finally:
+            array[index] = original
         gradient[index] = (positive - negative) / (2.0 * epsilon)
         iterator.iternext()
     return gradient

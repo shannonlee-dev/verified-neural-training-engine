@@ -4,13 +4,14 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from neural_engine.config import DEFAULT_SEED
+from neural_engine.config import DEFAULT_MNIST_HIDDEN_FEATURES, DEFAULT_SEED
+from neural_engine.core.grad_mode import no_grad
 from neural_engine.core.tensor import Tensor
 from neural_engine.data.mnist import batch_iterator
 from neural_engine.nn.activations import ReLU
 from neural_engine.nn.layers import Linear
 from neural_engine.nn.losses import cross_entropy
-from neural_engine.nn.module import Sequential
+from neural_engine.nn.module import Module, Sequential
 from neural_engine.optim.adam import Adam
 
 
@@ -24,7 +25,7 @@ class MnistEpochMetrics:
 
 def build_mnist_model(
     input_features: int = 784,
-    hidden_features: int = 256,
+    hidden_features: int = DEFAULT_MNIST_HIDDEN_FEATURES,
     class_count: int = 10,
     seed: int = DEFAULT_SEED,
 ) -> Sequential:
@@ -37,27 +38,24 @@ def build_mnist_model(
 
 
 def predict_mnist(
-    model: Sequential,
+    model: Module,
     inputs: np.ndarray,
     batch_size: int = 1024,
 ) -> np.ndarray:
     if batch_size <= 0:
         raise ValueError("batch_size must be positive")
-    if (
-        len(model.layers) != 3
-        or not isinstance(model.layers[0], Linear)
-        or not isinstance(model.layers[1], ReLU)
-        or not isinstance(model.layers[2], Linear)
-    ):
-        raise ValueError("MNIST prediction expects Linear → ReLU → Linear")
-    first = model.layers[0]
-    second = model.layers[2]
     predictions = []
-    for start in range(0, len(inputs), batch_size):
-        batch = np.asarray(inputs[start : start + batch_size], dtype=np.float64)
-        hidden = np.maximum(batch @ first.weight.data + first.bias.data, 0.0)
-        logits = hidden @ second.weight.data + second.bias.data
-        predictions.append(np.argmax(logits, axis=1))
+    with no_grad():
+        for start in range(0, len(inputs), batch_size):
+            batch = inputs[start : start + batch_size]
+            logits = model(Tensor(batch))
+            if (
+                logits.ndim != 2
+                or logits.shape[0] != len(batch)
+                or logits.shape[1] == 0
+            ):
+                raise ValueError("prediction expects shape (batch, classes)")
+            predictions.append(np.argmax(logits.data, axis=1))
     if not predictions:
         return np.empty(0, dtype=np.int64)
     return np.concatenate(predictions).astype(np.int64, copy=False)
@@ -73,7 +71,7 @@ def train_mnist(
     batch_size: int = 128,
     learning_rate: float = 0.001,
     seed: int = DEFAULT_SEED,
-    hidden_features: int = 128,
+    hidden_features: int = DEFAULT_MNIST_HIDDEN_FEATURES,
     class_count: int = 10,
 ) -> list[MnistEpochMetrics]:
     if epochs <= 0:

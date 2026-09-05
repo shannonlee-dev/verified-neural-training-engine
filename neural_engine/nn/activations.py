@@ -18,7 +18,8 @@ class ReLU(Module):
         def backward() -> None:
             inputs._accumulate(output.grad * (inputs.data > 0.0))
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
 
@@ -39,7 +40,8 @@ class Sigmoid(Module):
         def backward() -> None:
             inputs._accumulate(output.grad * values * (1.0 - values))
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output
 
 
@@ -62,5 +64,6 @@ class Softmax(Module):
             dot = np.sum(output.grad * probabilities, axis=self.axis, keepdims=True)
             inputs._accumulate(probabilities * (output.grad - dot))
 
-        output._backward = backward
+        if output.requires_grad:
+            output._backward = backward
         return output

@@ -39,7 +39,8 @@ def binary_cross_entropy(
         derivative = np.where(interior, derivative, 0.0)
         probabilities._accumulate(output.grad * derivative)
 
-    output._backward = backward
+    if output.requires_grad:
+        output._backward = backward
     return output
 
 
@@ -74,5 +75,6 @@ def cross_entropy(logits: Tensor, targets: np.ndarray) -> Tensor:
         gradient /= logits.shape[0]
         logits._accumulate(output.grad * gradient)
 
-    output._backward = backward
+    if output.requires_grad:
+        output._backward = backward
     return output

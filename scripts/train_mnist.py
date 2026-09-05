@@ -8,7 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from neural_engine.config import DEFAULT_SEED
+from neural_engine.config import DEFAULT_MNIST_HIDDEN_FEATURES, DEFAULT_SEED
 from neural_engine.data.mnist import MNIST_FILES, load_mnist
 from neural_engine.mnist_training import train_mnist
 
@@ -19,7 +19,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--learning-rate", type=float, default=0.001)
-    parser.add_argument("--hidden-features", type=int, default=256)
+    parser.add_argument(
+        "--hidden-features", type=int, default=DEFAULT_MNIST_HIDDEN_FEATURES
+    )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--train-limit", type=int)
     parser.add_argument("--test-limit", type=int)
