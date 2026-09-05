@@ -83,3 +83,19 @@ def train_xor(
             )
         )
     return history
+
+
+def compare_xor_initializations(
+    epochs: int = 100,
+    seed: int = DEFAULT_SEED,
+    learning_rate: float = 0.05,
+) -> dict[str, list[EpochMetrics]]:
+    return {
+        initialization: train_xor(
+            initialization,
+            epochs=epochs,
+            seed=seed,
+            learning_rate=learning_rate,
+        )
+        for initialization in ("zero", "random", "he")
+    }

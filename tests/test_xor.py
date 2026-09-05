@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 
 from neural_engine.experiments import build_xor_model, train_xor
-from scripts.compare_initialization import main as compare_initialization_main
+from neural_engine.cli.compare_initialization import main as compare_initialization_main
 
 
 class XorExperimentTests(unittest.TestCase):

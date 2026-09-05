@@ -47,6 +47,7 @@ Python 3.10 이상을 권장합니다.
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r requirements.txt
+python3 -m pip install -e .
 ```
 
 의존성은 NumPy와 그래프 출력용 Matplotlib뿐입니다. 테스트는 Python 표준 `unittest`를 사용합니다.
@@ -60,17 +61,17 @@ python3 -m pip install -r requirements.txt
 python3 -m unittest discover -s tests -v
 
 # 2. Tensor 연산과 필수 레이어 Gradient Check
-python3 scripts/gradient_check.py
+neural-engine verify gradients
 
 # 3. XOR: He 성공과 Zero 실패 재현
-python3 scripts/train_xor.py --initialization he --epochs 100 --log-file logs/xor_he.log
-python3 scripts/train_xor.py --initialization zero --epochs 50 --log-file logs/xor_zero.log
+neural-engine train xor --initialization he --epochs 100 --log-file logs/xor_he.log
+neural-engine train xor --initialization zero --epochs 50 --log-file logs/xor_zero.log
 
 # 4. Zero / Random / He 비교 CSV와 그래프 생성
-python3 scripts/compare_initialization.py
+neural-engine compare initialization
 
 # 5. MNIST 전체 데이터 1 epoch 학습 (정확도 목표 95%)
-python3 scripts/train_mnist.py --epochs 1 --log-file logs/mnist.log
+neural-engine train mnist --epochs 1 --log-file logs/mnist.log
 ```
 
 MNIST 최초 실행은 네 개의 표준 IDX gzip 파일을 `data/`에 내려받습니다. `gzip` 압축을 읽고 IDX magic number·차원·payload 크기를 직접 검증해 NumPy 배열로 변환합니다. 이후 실행은 캐시를 재사용하며 `data/*.gz`는 Git에서 제외됩니다.
@@ -78,7 +79,7 @@ MNIST 최초 실행은 네 개의 표준 IDX gzip 파일을 `data/`에 내려받
 빠른 파이프라인 확인에는 제한 옵션을 사용할 수 있습니다. 제한 실행은 95% 완료 기준 판정에서 제외됩니다.
 
 ```bash
-python3 scripts/train_mnist.py --train-limit 1000 --test-limit 500
+neural-engine train mnist --train-limit 1000 --test-limit 500
 ```
 
 모든 CLI의 기본 seed는 `42`이며 `--seed`로 변경할 수 있습니다. MNIST CLI와 Python API의 기본 모델은 `784 → 256 → 10`이며, `--hidden-features` 또는 `hidden_features`로 은닉층 크기를 변경할 수 있습니다.
@@ -143,15 +144,19 @@ neural_engine/
 ├── nn/                     # Module, 레이어, 활성화, 손실, 초기화
 ├── optim/                  # SGD, Adam, zero_grad
 ├── data/mnist.py           # IDX gzip 다운로드·직접 파싱·배치
+├── cli/                    # train / verify / compare 명령과 CLI 모듈
 ├── experiments.py          # 공통 XOR 학습
 ├── mnist_training.py       # MNIST 모델·학습·평가
 └── verification.py         # 중앙 차분과 Gradient Check
-scripts/                    # 재현 가능한 CLI 진입점
 tests/                      # unittest 단위·통합 테스트
 logs/                       # 실제 검증·학습 기록
 figures/                    # 초기화 Loss 비교 그래프
 reports/                    # 검증 및 실험 분석
 ```
+
+설치 후 `neural-engine train xor`, `neural-engine train mnist`,
+`neural-engine verify gradients`, `neural-engine compare initialization`으로
+실험을 실행할 수 있습니다.
 
 ## 구현 원리
 

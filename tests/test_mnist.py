@@ -22,7 +22,7 @@ from neural_engine.mnist_training import (
 from neural_engine.nn.activations import ReLU, Sigmoid, Softmax
 from neural_engine.nn.layers import Linear
 from neural_engine.nn.module import Module, Sequential
-from scripts.train_mnist import main as train_mnist_main
+from neural_engine.cli.train_mnist import main as train_mnist_main
 
 
 def image_idx(values: np.ndarray) -> bytes:
@@ -317,7 +317,9 @@ class MnistDataTests(unittest.TestCase):
             for key, payload in fixtures.items():
                 (root / MNIST_FILES[key]).write_bytes(gzip.compress(payload))
 
-            with patch("scripts.train_mnist.train_mnist", wraps=train_mnist) as trainer:
+            with patch(
+                "neural_engine.cli.train_mnist.train_mnist", wraps=train_mnist
+            ) as trainer:
                 train_mnist_main(
                     [
                         "--data-dir",

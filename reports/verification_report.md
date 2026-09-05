@@ -28,7 +28,7 @@ relative error = max(|analytic - numerical| / max(1e-12, |analytic| + |numerical
 ## 실행 방법
 
 ```bash
-python3 scripts/gradient_check.py
+neural-engine verify gradients
 ```
 
 ## 실행 결과
