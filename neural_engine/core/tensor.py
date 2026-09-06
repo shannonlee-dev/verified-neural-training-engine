@@ -42,7 +42,7 @@ class Tensor:
 
     def zero_grad(self) -> None:
         if self.requires_grad:
-            self.grad = np.zeros_like(self.data)
+            self.grad.fill(0)
 
     def _accumulate(self, gradient: np.ndarray) -> None:
         if self.requires_grad:

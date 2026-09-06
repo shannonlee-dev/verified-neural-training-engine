@@ -95,6 +95,16 @@ class TensorTests(unittest.TestCase):
 
         np.testing.assert_array_equal(x.grad, [1.0])
 
+    def test_zero_grad_reuses_existing_gradient_array(self):
+        x = Tensor([1.0, 2.0], requires_grad=True)
+        gradient = x.grad
+        x.grad[:] = [3.0, 4.0]
+
+        x.zero_grad()
+
+        self.assertIs(x.grad, gradient)
+        np.testing.assert_array_equal(x.grad, [0.0, 0.0])
+
     def test_graph_parents_preserve_operation_input_order(self):
         left = Tensor([1.0], requires_grad=True)
         right = Tensor([2.0], requires_grad=True)
