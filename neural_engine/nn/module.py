@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from collections.abc import Iterator
 
 from neural_engine.core.tensor import Tensor
 
 
-class Module:
+class Module(ABC):
+    @abstractmethod
     def forward(self, inputs: Tensor) -> Tensor:
-        raise NotImplementedError
+        ...
 
     def __call__(self, inputs: Tensor) -> Tensor:
         return self.forward(inputs)
