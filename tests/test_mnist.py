@@ -140,7 +140,7 @@ class MnistDataTests(unittest.TestCase):
         for output in model.outputs:
             self.assertFalse(output.requires_grad)
             self.assertIsNone(output.grad)
-            self.assertEqual(output._prev, ())
+            self.assertEqual(output._parents, ())
             self.assertIsNone(output._backward.__closure__)
 
     def test_predict_matches_sequential_model_forward(self):

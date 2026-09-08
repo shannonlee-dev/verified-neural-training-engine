@@ -300,7 +300,7 @@ class Tensor:
             if self.requires_grad:
                 gradient = np.zeros_like(self.data)
                 np.add.at(gradient, index, output.grad)
-                self.grad += gradient
+                self._accumulate(gradient)
 
         if output.requires_grad:
             output._backward = backward
