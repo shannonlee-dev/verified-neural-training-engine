@@ -302,6 +302,12 @@ class MnistDataTests(unittest.TestCase):
             self.assertEqual(status, 0)
             self.assertIn("epoch,loss,accuracy,seed", log_file.read_text())
 
+    def test_training_cli_rejects_non_positive_limits(self):
+        with self.assertRaises(SystemExit):
+            train_mnist_main(["--train-limit", "0"])
+        with self.assertRaises(SystemExit):
+            train_mnist_main(["--test-limit", "-1"])
+
     def test_training_cli_defaults_to_256_and_honors_explicit_hidden_features(self):
         images = np.array([[[0, 255], [0, 255]], [[255, 0], [255, 0]]], dtype=np.uint8)
         labels = np.array([0, 1], dtype=np.uint8)

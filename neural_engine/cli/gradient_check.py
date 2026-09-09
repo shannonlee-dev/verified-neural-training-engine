@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from neural_engine.reporting import format_gradient_checks, write_report
 from neural_engine.verification import GRADIENT_THRESHOLD, run_gradient_checks
 
 
@@ -12,23 +13,9 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 
 def run(args: argparse.Namespace) -> int:
     results = run_gradient_checks()
-    lines = []
-    for result in results:
-        status = "PASS" if result.relative_error <= GRADIENT_THRESHOLD else "FAIL"
-        lines.append(f"[{status}] {result.name}: relative_error={result.relative_error:.3e}")
-    maximum = max(result.relative_error for result in results)
-    lines.append(
-        f"Maximum relative error: {maximum:.3e} (threshold: {GRADIENT_THRESHOLD:.1e})"
-    )
-    lines.append(
-        "All gradient checks passed."
-        if maximum <= GRADIENT_THRESHOLD
-        else "Gradient checks failed."
-    )
-    output = "\n".join(lines) + "\n"
+    output, maximum = format_gradient_checks(results, GRADIENT_THRESHOLD)
     print(output, end="")
-    args.log_file.parent.mkdir(parents=True, exist_ok=True)
-    args.log_file.write_text(output, encoding="utf-8")
+    write_report(output, args.log_file)
     return 0 if maximum <= GRADIENT_THRESHOLD else 1
 
 

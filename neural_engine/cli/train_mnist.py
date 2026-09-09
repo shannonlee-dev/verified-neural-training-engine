@@ -6,6 +6,14 @@ from pathlib import Path
 from neural_engine.config import DEFAULT_MNIST_HIDDEN_FEATURES, DEFAULT_SEED
 from neural_engine.data.mnist import MNIST_FILES, load_mnist
 from neural_engine.mnist_training import train_mnist
+from neural_engine.reporting import format_mnist_history, write_report
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be positive")
+    return parsed
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -17,8 +25,8 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--hidden-features", type=int, default=DEFAULT_MNIST_HIDDEN_FEATURES
     )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
-    parser.add_argument("--train-limit", type=int)
-    parser.add_argument("--test-limit", type=int)
+    parser.add_argument("--train-limit", type=positive_int)
+    parser.add_argument("--test-limit", type=positive_int)
     parser.add_argument("--log-file", type=Path, default=Path("logs/mnist.log"))
 
 
@@ -47,19 +55,13 @@ def run(args: argparse.Namespace) -> int:
         hidden_features=args.hidden_features,
         class_count=10,
     )
-    lines = ["epoch,loss,accuracy,seed"]
     for item in history:
-        lines.append(f"{item.epoch},{item.loss:.10f},{item.accuracy:.4f},{item.seed}")
         print(
             f"Epoch {item.epoch}/{args.epochs}: loss={item.loss:.6f}, "
             f"test_accuracy={item.accuracy:.2%}"
         )
     final = history[-1]
-    lines.append(
-        f"Final: loss={final.loss:.6f}, test_accuracy={final.accuracy:.2%}, seed={final.seed}"
-    )
-    args.log_file.parent.mkdir(parents=True, exist_ok=True)
-    args.log_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_report(format_mnist_history(history), args.log_file)
     print(f"Log: {args.log_file}")
 
     full_run = args.train_limit is None and args.test_limit is None

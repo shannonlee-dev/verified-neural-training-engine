@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from neural_engine.experiments import EpochMetrics
+from neural_engine.mnist_training import MnistEpochMetrics
+from neural_engine.verification import CheckResult
 
 
 def format_xor_history(history: list[EpochMetrics]) -> str:
@@ -15,6 +17,39 @@ def format_xor_history(history: list[EpochMetrics]) -> str:
     lines.append(
         f"Final: loss={final.loss:.6f}, accuracy={final.accuracy:.2%}, "
         f"initialization={final.initialization}, seed={final.seed}"
+    )
+    return "\n".join(lines) + "\n"
+
+
+def format_gradient_checks(
+    results: list[CheckResult], threshold: float
+) -> tuple[str, float]:
+    lines = []
+    for result in results:
+        status = "PASS" if result.relative_error <= threshold else "FAIL"
+        lines.append(f"[{status}] {result.name}: relative_error={result.relative_error:.3e}")
+    maximum = max(result.relative_error for result in results)
+    lines.append(
+        f"Maximum relative error: {maximum:.3e} (threshold: {threshold:.1e})"
+    )
+    lines.append(
+        "All gradient checks passed."
+        if maximum <= threshold
+        else "Gradient checks failed."
+    )
+    return "\n".join(lines) + "\n", maximum
+
+
+def format_mnist_history(history: list[MnistEpochMetrics]) -> str:
+    lines = ["epoch,loss,accuracy,seed"]
+    lines.extend(
+        f"{item.epoch},{item.loss:.10f},{item.accuracy:.4f},{item.seed}"
+        for item in history
+    )
+    final = history[-1]
+    lines.append(
+        f"Final: loss={final.loss:.6f}, test_accuracy={final.accuracy:.2%}, "
+        f"seed={final.seed}"
     )
     return "\n".join(lines) + "\n"
 
