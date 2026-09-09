@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
 from neural_engine.core.tensor import Tensor
 
 
-class Optimizer:
+class Optimizer(ABC):
     def __init__(self, parameters: Iterable[Tensor], lr: float) -> None:
         if lr <= 0:
             raise ValueError("learning rate must be positive")
@@ -18,5 +19,6 @@ class Optimizer:
         for parameter in self.parameters:
             parameter.zero_grad()
 
+    @abstractmethod
     def step(self) -> None:
         raise NotImplementedError
