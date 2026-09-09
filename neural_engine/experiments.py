@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from neural_engine.config import DEFAULT_SEED
+from neural_engine.core.grad_mode import no_grad
 from neural_engine.core.tensor import Tensor
 from neural_engine.nn.activations import ReLU, Sigmoid
 from neural_engine.nn.initialization import INITIALIZATIONS
@@ -45,11 +46,12 @@ def build_xor_model(
 
 
 def _xor_metrics(model: Sequential) -> tuple[float, float]:
-    probabilities = model(Tensor(XOR_INPUTS))
-    loss = binary_cross_entropy(probabilities, XOR_TARGETS)
-    predictions = (probabilities.data >= 0.5).astype(np.float64)
-    accuracy = float(np.mean(predictions == XOR_TARGETS))
-    return float(loss.data), accuracy
+    with no_grad():
+        probabilities = model(Tensor(XOR_INPUTS))
+        loss = binary_cross_entropy(probabilities, XOR_TARGETS)
+        predictions = (probabilities.data >= 0.5).astype(np.float64)
+        accuracy = float(np.mean(predictions == XOR_TARGETS))
+        return float(loss.data), accuracy
 
 
 def train_xor(
