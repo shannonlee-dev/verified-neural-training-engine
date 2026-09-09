@@ -204,19 +204,3 @@ Adam은 Momentum 계열의 1차 모멘트 `m`과 RMSProp 계열의 2차 모멘�
 | MNIST, 1 epoch test accuracy | `95.21%` | `>= 95%` | PASS |
 
 상세 수치는 `reports/verification_report.md`, `reports/experiment_report.md`와 `logs/`에서 확인할 수 있습니다.
-
-## 미션 완료 체크리스트
-
-- [x] Tensor `data`, `grad`, `_backward`와 동적 계산 그래프
-- [x] 위상 정렬 → 역순 순회 → Chain Rule 역전파
-- [x] 사칙연산, MatMul과 broadcasting gradient 복원
-- [x] Linear, ReLU, Sigmoid, Softmax
-- [x] SGD, Adam과 명시적 `zero_grad()`
-- [x] Zero, Random, He, Xavier 초기화
-- [x] 모든 필수 연산·레이어 Gradient Check `<= 1e-7`
-- [x] He 초기화 XOR 100 epoch 이내 성공
-- [x] Zero 초기화 XOR 50 epoch 실패 재현
-- [x] Zero/Random/He Loss 비교 CSV와 `figures/initialization_loss.png`
-- [x] IDX gzip 직접 파싱 MNIST 학습 스크립트와 로그
-- [x] MNIST 1 epoch 정확도 95% 이상
-- [x] 고정 seed, 설치·실행 방법, 검증·실험 리포트

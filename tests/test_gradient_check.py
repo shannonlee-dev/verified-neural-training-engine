@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 
+from neural_engine import verification
 from neural_engine.verification import (
     GRADIENT_THRESHOLD,
     numerical_gradient,
@@ -11,6 +12,22 @@ from neural_engine.verification import (
 
 
 class GradientCheckTests(unittest.TestCase):
+    def test_compare_gradients_returns_named_relative_error(self):
+        analytical_gradient = np.array([2.0, -4.0])
+        numerical_function = lambda values: float((values * values).sum())
+        numerical_values = np.array([1.0, -2.0])
+
+        self.assertTrue(hasattr(verification, "compare_gradients"))
+        result = verification.compare_gradients(
+            "quadratic",
+            analytical_gradient,
+            numerical_function,
+            numerical_values,
+        )
+
+        self.assertEqual(result.name, "quadratic")
+        self.assertLess(result.relative_error, 1e-9)
+
     def test_numerical_gradient_matches_quadratic(self):
         values = np.array([-2.0, 3.0])
         original = values.copy()
