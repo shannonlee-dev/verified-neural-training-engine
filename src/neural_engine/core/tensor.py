@@ -8,7 +8,6 @@ import numpy as np
 from neural_engine.core.grad_mode import is_grad_enabled
 from neural_engine.core.utils import sum_to_shape
 
-
 ArrayLike = Any
 
 
@@ -24,9 +23,7 @@ class Tensor:
         _op: str = "",
     ) -> None:
         self.data = np.asarray(data, dtype=np.float64)
-        self.requires_grad = bool(requires_grad) and (
-            not _parents or is_grad_enabled()
-        )
+        self.requires_grad = bool(requires_grad) and (not _parents or is_grad_enabled())
         self.grad = np.zeros_like(self.data) if self.requires_grad else None
         self._parents = tuple(_parents) if self.requires_grad else ()
         self._op = _op
@@ -225,7 +222,9 @@ class Tensor:
             gradient = output.grad
             if axis is not None and not keepdims:
                 axes = (axis,) if isinstance(axis, int) else axis
-                normalized = tuple(item if item >= 0 else item + self.ndim for item in axes)
+                normalized = tuple(
+                    item if item >= 0 else item + self.ndim for item in axes
+                )
                 for item in sorted(normalized):
                     gradient = np.expand_dims(gradient, axis=item)
             self._accumulate(np.broadcast_to(gradient, self.shape))

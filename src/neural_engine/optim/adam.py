@@ -44,6 +44,6 @@ class Adam(Optimizer):
 
             corrected_first = first / (1.0 - self.beta1**self.step_count)
             corrected_second = second / (1.0 - self.beta2**self.step_count)
-            parameter.data -= self.lr * corrected_first / (
-                np.sqrt(corrected_second) + self.eps
+            parameter.data -= (
+                self.lr * corrected_first / (np.sqrt(corrected_second) + self.eps)
             )

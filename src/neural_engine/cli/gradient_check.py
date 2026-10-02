@@ -8,7 +8,9 @@ from neural_engine.verification import GRADIENT_THRESHOLD, run_gradient_checks
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--log-file", type=Path, default=Path("logs/gradient_check.log"))
+    parser.add_argument(
+        "--log-file", type=Path, default=Path("logs/gradient_check.log")
+    )
 
 
 def run(args: argparse.Namespace) -> int:

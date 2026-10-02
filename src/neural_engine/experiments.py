@@ -14,7 +14,6 @@ from neural_engine.nn.losses import binary_cross_entropy
 from neural_engine.nn.module import Sequential
 from neural_engine.optim.adam import Adam
 
-
 XOR_INPUTS = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
 XOR_TARGETS = np.array([[0.0], [1.0], [1.0], [0.0]])
 

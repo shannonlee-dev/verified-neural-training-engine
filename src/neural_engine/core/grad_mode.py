@@ -2,7 +2,6 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 
-
 _grad_enabled: ContextVar[bool] = ContextVar("grad_enabled", default=True)
 
 

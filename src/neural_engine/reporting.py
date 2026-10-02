@@ -27,11 +27,11 @@ def format_gradient_checks(
     lines = []
     for result in results:
         status = "PASS" if result.relative_error <= threshold else "FAIL"
-        lines.append(f"[{status}] {result.name}: relative_error={result.relative_error:.3e}")
+        lines.append(
+            f"[{status}] {result.name}: relative_error={result.relative_error:.3e}"
+        )
     maximum = max(result.relative_error for result in results)
-    lines.append(
-        f"Maximum relative error: {maximum:.3e} (threshold: {threshold:.1e})"
-    )
+    lines.append(f"Maximum relative error: {maximum:.3e} (threshold: {threshold:.1e})")
     lines.append(
         "All gradient checks passed."
         if maximum <= threshold
@@ -71,7 +71,8 @@ def write_initialization_comparison(
     import tempfile
 
     os.environ.setdefault(
-        "MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "verified-neural-engine-matplotlib")
+        "MPLCONFIGDIR",
+        str(Path(tempfile.gettempdir()) / "verified-neural-engine-matplotlib"),
     )
     import matplotlib
 

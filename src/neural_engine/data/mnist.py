@@ -10,7 +10,6 @@ from pathlib import Path
 
 import numpy as np
 
-
 MNIST_FILES = {
     "train_images": "train-images-idx3-ubyte.gz",
     "train_labels": "train-labels-idx1-ubyte.gz",
@@ -41,7 +40,9 @@ def parse_idx(payload: bytes) -> np.ndarray:
         raise ValueError(
             f"IDX payload size mismatch: expected {expected_size}, got {actual_size}"
         )
-    return np.frombuffer(payload, dtype=np.uint8, offset=header_size).reshape(shape).copy()
+    return (
+        np.frombuffer(payload, dtype=np.uint8, offset=header_size).reshape(shape).copy()
+    )
 
 
 def ensure_mnist(data_dir: str | Path) -> dict[str, Path]:
@@ -85,7 +86,9 @@ def load_mnist(
         paths = {key: root / filename for key, filename in MNIST_FILES.items()}
         missing = [str(path) for path in paths.values() if not path.exists()]
         if missing:
-            raise FileNotFoundError(f"MNIST cache files are missing: {', '.join(missing)}")
+            raise FileNotFoundError(
+                f"MNIST cache files are missing: {', '.join(missing)}"
+            )
 
     arrays = {}
     for key, path in paths.items():

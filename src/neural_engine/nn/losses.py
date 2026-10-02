@@ -19,8 +19,7 @@ def binary_cross_entropy(
         raise ValueError("binary_cross_entropy probabilities must be in [0, 1]")
     clipped = np.clip(probabilities.data, epsilon, 1.0 - epsilon)
     loss_value = -np.mean(
-        target_values * np.log(clipped)
-        + (1.0 - target_values) * np.log(1.0 - clipped)
+        target_values * np.log(clipped) + (1.0 - target_values) * np.log(1.0 - clipped)
     )
     output = Tensor(
         loss_value,
@@ -33,9 +32,7 @@ def binary_cross_entropy(
         derivative = (
             -target_values / clipped + (1.0 - target_values) / (1.0 - clipped)
         ) / target_values.size
-        interior = (probabilities.data > epsilon) & (
-            probabilities.data < 1.0 - epsilon
-        )
+        interior = (probabilities.data > epsilon) & (probabilities.data < 1.0 - epsilon)
         derivative = np.where(interior, derivative, 0.0)
         probabilities._accumulate(output.grad * derivative)
 

@@ -6,7 +6,11 @@ from pathlib import Path
 from neural_engine.config import DEFAULT_SEED
 from neural_engine.experiments import train_xor
 from neural_engine.nn.initialization import INITIALIZATIONS
-from neural_engine.reporting import default_xor_log_path, format_xor_history, write_report
+from neural_engine.reporting import (
+    default_xor_log_path,
+    format_xor_history,
+    write_report,
+)
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:

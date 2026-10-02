@@ -27,7 +27,9 @@ def run(args: argparse.Namespace) -> int:
     write_initialization_comparison(histories, args.csv_file, args.figure_file)
     for initialization, history in histories.items():
         final = history[-1]
-        print(f"{initialization:>6}: loss={final.loss:.6f}, accuracy={final.accuracy:.2%}")
+        print(
+            f"{initialization:>6}: loss={final.loss:.6f}, accuracy={final.accuracy:.2%}"
+        )
     print(f"CSV: {args.csv_file}")
     print(f"Figure: {args.figure_file}")
     return 0

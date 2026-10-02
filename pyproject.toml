@@ -5,7 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "verified-neural-training-engine"
 version = "0.1.0"
-description = "A verified NumPy neural training engine"
+description = "NumPy 자동 미분·신경망·최적화와 수치 기울기 검증을 구현한 학습 엔진"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24", "matplotlib>=3.6"]
 
@@ -13,4 +14,19 @@ dependencies = ["numpy>=1.24", "matplotlib>=3.6"]
 neural-engine = "neural_engine.cli.main:main"
 
 [tool.setuptools.packages.find]
-include = ["neural_engine*"]
+where = ["src"]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.9,<1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib --strict-markers"
+markers = ["smoke: 외부 서비스·원본 데이터 변경 없이 주요 실행 경로 검증"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

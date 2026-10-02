@@ -10,7 +10,6 @@ from neural_engine.nn.activations import ReLU, Sigmoid, Softmax
 from neural_engine.nn.layers import Linear
 from neural_engine.nn.losses import binary_cross_entropy, cross_entropy
 
-
 GRADIENT_EPSILON = 1e-5
 GRADIENT_THRESHOLD = 1e-7
 
@@ -80,7 +79,10 @@ def run_gradient_checks() -> list[CheckResult]:
     bias = Tensor(numerical_values.copy(), requires_grad=True)
     (((Tensor(base) + bias) * upstream).sum()).backward()
     analytical_gradient = bias.grad.copy()
-    numerical_function = lambda values: np.sum((base + values) * upstream)
+
+    def numerical_function(values):
+        return np.sum((base + values) * upstream)
+
     results.append(
         compare_gradients(
             "add_broadcast",
@@ -96,7 +98,10 @@ def run_gradient_checks() -> list[CheckResult]:
     multiply_tensor = Tensor(numerical_values.copy(), requires_grad=True)
     ((multiply_tensor * multiplier) * multiply_upstream).sum().backward()
     analytical_gradient = multiply_tensor.grad.copy()
-    numerical_function = lambda values: np.sum(values * multiplier * multiply_upstream)
+
+    def numerical_function(values):
+        return np.sum(values * multiplier * multiply_upstream)
+
     results.append(
         compare_gradients(
             "multiply",
@@ -112,7 +117,10 @@ def run_gradient_checks() -> list[CheckResult]:
     denominator = Tensor(numerical_values.copy(), requires_grad=True)
     ((Tensor(numerator) / denominator) * divide_upstream).sum().backward()
     analytical_gradient = denominator.grad.copy()
-    numerical_function = lambda values: np.sum((numerator / values) * divide_upstream)
+
+    def numerical_function(values):
+        return np.sum(numerator / values * divide_upstream)
+
     results.append(
         compare_gradients(
             "divide",
@@ -128,7 +136,10 @@ def run_gradient_checks() -> list[CheckResult]:
     left = Tensor(numerical_values.copy(), requires_grad=True)
     ((left @ Tensor(right_values)) * matmul_upstream).sum().backward()
     analytical_gradient = left.grad.copy()
-    numerical_function = lambda values: np.sum((values @ right_values) * matmul_upstream)
+
+    def numerical_function(values):
+        return np.sum(values @ right_values * matmul_upstream)
+
     results.append(
         compare_gradients(
             "matmul",
@@ -142,7 +153,10 @@ def run_gradient_checks() -> list[CheckResult]:
     reduction = Tensor(numerical_values.copy(), requires_grad=True)
     reduction.sum(axis=1).mean().backward()
     analytical_gradient = reduction.grad.copy()
-    numerical_function = lambda values: np.mean(np.sum(values, axis=1))
+
+    def numerical_function(values):
+        return np.mean(np.sum(values, axis=1))
+
     results.append(
         compare_gradients(
             "sum_mean",
@@ -160,9 +174,10 @@ def run_gradient_checks() -> list[CheckResult]:
     linear_input = Tensor(linear_input_values.copy(), requires_grad=True)
     (layer(linear_input) * linear_upstream).sum().backward()
     analytical_gradient = linear_input.grad.copy()
-    numerical_function = lambda values: np.sum(
-        (values @ layer.weight.data + layer.bias.data) * linear_upstream
-    )
+
+    def numerical_function(values):
+        return np.sum((values @ layer.weight.data + layer.bias.data) * linear_upstream)
+
     numerical_values = linear_input_values
     results.append(
         compare_gradients(
@@ -174,9 +189,12 @@ def run_gradient_checks() -> list[CheckResult]:
     )
 
     analytical_gradient = layer.weight.grad.copy()
-    numerical_function = lambda values: np.sum(
-        (linear_input_values @ values + layer.bias.data) * linear_upstream
-    )
+
+    def numerical_function(values):
+        return np.sum(
+            (linear_input_values @ values + layer.bias.data) * linear_upstream
+        )
+
     numerical_values = layer.weight.data
     results.append(
         compare_gradients(
@@ -188,9 +206,12 @@ def run_gradient_checks() -> list[CheckResult]:
     )
 
     analytical_gradient = layer.bias.grad.copy()
-    numerical_function = lambda values: np.sum(
-        (linear_input_values @ layer.weight.data + values) * linear_upstream
-    )
+
+    def numerical_function(values):
+        return np.sum(
+            (linear_input_values @ layer.weight.data + values) * linear_upstream
+        )
+
     numerical_values = layer.bias.data
     results.append(
         compare_gradients(
@@ -206,9 +227,10 @@ def run_gradient_checks() -> list[CheckResult]:
     relu_input = Tensor(numerical_values.copy(), requires_grad=True)
     (ReLU()(relu_input) * activation_upstream).sum().backward()
     analytical_gradient = relu_input.grad.copy()
-    numerical_function = lambda values: np.sum(
-        np.maximum(values, 0.0) * activation_upstream
-    )
+
+    def numerical_function(values):
+        return np.sum(np.maximum(values, 0.0) * activation_upstream)
+
     results.append(
         compare_gradients(
             "ReLU",

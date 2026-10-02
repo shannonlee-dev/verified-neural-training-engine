@@ -8,8 +8,7 @@ from neural_engine.core.tensor import Tensor
 
 class Module(ABC):
     @abstractmethod
-    def forward(self, inputs: Tensor) -> Tensor:
-        ...
+    def forward(self, inputs: Tensor) -> Tensor: ...
 
     def __call__(self, inputs: Tensor) -> Tensor:
         return self.forward(inputs)

@@ -1,6 +1,4 @@
-# Verified Neural Training Engine
-
-[![CI](https://github.com/shannonlee-dev/verified-neural-training-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/shannonlee-dev/verified-neural-training-engine/actions/workflows/ci.yml)
+# 검증 가능한 신경망 학습 엔진
 
 ## 프로젝트 소개
 
@@ -23,34 +21,44 @@ NumPy만으로 구현한 동적 계산 그래프 기반 미니 딥러닝 프레�
 
 ## 아키텍처
 
-```text
-NumPy ndarray
-    ↓
-Tensor + 동적 계산 그래프 ── sum_to_shape() broadcasting 복원
-    ↓
-Module / Linear / ReLU / Sigmoid / Softmax / Loss
-    ↓
-SGD / Adam ── zero_grad() → forward → backward() → step()
-    ↓
-XOR 실험 · MNIST 학습 · Gradient Check
-    ↓
-logs/ · figures/ · reports/
+| 경로 | 역할 |
+| --- | --- |
+| `src/neural_engine/core/` | Tensor·동적 자동 미분·broadcasting 기울기 복원 |
+| `src/neural_engine/nn/` | 모듈·레이어·활성화·손실·초기화 |
+| `src/neural_engine/optim/` | SGD·Adam·기울기 초기화 |
+| `src/neural_engine/data/mnist.py` | IDX gzip 다운로드·직접 파싱·배치 |
+| `src/neural_engine/cli/` | 학습·검증·초기화 비교 명령 |
+| `src/neural_engine/experiments.py`, `mnist_training.py` | XOR·MNIST 모델과 학습 흐름 |
+| `src/neural_engine/verification.py`, `reporting.py` | 중앙 차분·Gradient Check·보고서 |
+| `tests/` | pytest 단위·CLI·기울기·학습 회귀 검증 |
+| `logs/`, `figures/`, `reports/` | 기존 학습 기록·그래프·분석 보고서 |
+
+```mermaid
+flowchart TD
+    NumPy["NumPy 배열"] --> Core["Tensor·동적 계산 그래프"]
+    Core --> NN["모듈·레이어·활성화·손실"]
+    NN --> Optim["SGD·Adam"]
+    Data["직접 파싱한 MNIST·XOR 입력"] --> Training["순전파·역전파·학습"]
+    NN --> Training
+    Optim --> Training
+    Verify["중앙 차분 기울기 검증"] --> Core
+    Verify --> NN
+    Training --> Reporting["실행 로그·CSV·그래프"]
+    Verify --> Reporting
 ```
 
-`core`는 NumPy에만 의존하고, `nn`은 Tensor 연산을 조합합니다. `optim`은 `Module.parameters()`가 반환한 학습 Tensor만 갱신합니다. 데이터 로더와 실행 스크립트는 이 세 계층의 공개 API를 사용합니다.
+`core`는 NumPy에만 의존하고 `nn`은 Tensor 연산을 조합합니다. `optim`은 모듈의 학습 Tensor를 갱신하며 데이터 로더와 CLI는 세 계층의 공개 API를 사용합니다.
 
 ## 설치 방법
 
-Python 3.10 이상을 권장합니다.
+Python 3.10 이상과 uv를 사용합니다. 개발·CI는 `.python-version`의 Python 3.13을 사용합니다.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install -r requirements.txt
-python3 -m pip install -e .
+uv sync --frozen
+uv run --frozen neural-engine --help
 ```
 
-의존성은 NumPy와 그래프 출력용 Matplotlib뿐입니다. 테스트는 Python 표준 `unittest`를 사용합니다.
+NumPy와 그래프 출력용 Matplotlib을 사용하며, pytest·Ruff는 개발 의존성입니다. 설치 버전은 `uv.lock`으로 고정하고 별도 `PYTHONPATH` 없이 설치된 패키지를 실행합니다.
 
 ## 실행 방법
 
@@ -58,20 +66,20 @@ python3 -m pip install -e .
 
 ```bash
 # 1. 전체 단위 테스트
-python3 -m unittest discover -s tests -v
+make test
 
 # 2. Tensor 연산과 필수 레이어 Gradient Check
-neural-engine verify gradients
+uv run --frozen neural-engine verify gradients
 
 # 3. XOR: He 성공과 Zero 실패 재현
-neural-engine train xor --initialization he --epochs 100 --log-file logs/xor_he.log
-neural-engine train xor --initialization zero --epochs 50 --log-file logs/xor_zero.log
+uv run --frozen neural-engine train xor --initialization he --epochs 100 --log-file logs/xor_he.log
+uv run --frozen neural-engine train xor --initialization zero --epochs 50 --log-file logs/xor_zero.log
 
 # 4. Zero / Random / He 비교 CSV와 그래프 생성
-neural-engine compare initialization
+uv run --frozen neural-engine compare initialization
 
 # 5. MNIST 전체 데이터 1 epoch 학습 (정확도 목표 95%)
-neural-engine train mnist --epochs 1 --log-file logs/mnist.log
+uv run --frozen neural-engine train mnist --epochs 1 --log-file logs/mnist.log
 ```
 
 MNIST 최초 실행은 네 개의 표준 IDX gzip 파일을 `data/`에 내려받습니다. `gzip` 압축을 읽고 IDX magic number·차원·payload 크기를 직접 검증해 NumPy 배열로 변환합니다. 이후 실행은 캐시를 재사용하며 `data/*.gz`는 Git에서 제외됩니다.
@@ -79,7 +87,7 @@ MNIST 최초 실행은 네 개의 표준 IDX gzip 파일을 `data/`에 내려받
 빠른 파이프라인 확인에는 제한 옵션을 사용할 수 있습니다. 제한 실행은 95% 완료 기준 판정에서 제외됩니다.
 
 ```bash
-neural-engine train mnist --train-limit 1000 --test-limit 500
+uv run --frozen neural-engine train mnist --train-limit 1000 --test-limit 500
 ```
 
 모든 CLI의 기본 seed는 `42`이며 `--seed`로 변경할 수 있습니다. MNIST CLI와 Python API의 기본 모델은 `784 → 256 → 10`이며, `--hidden-features` 또는 `hidden_features`로 은닉층 크기를 변경할 수 있습니다.
@@ -129,17 +137,17 @@ optimizer = Adam(model.parameters(), lr=0.01)
 inputs = Tensor([[0.0, 1.0], [1.0, 0.0]])
 targets = np.array([1, 0])
 
-optimizer.zero_grad()       # 1. 이전 gradient 초기화
-logits = model(inputs)      # 2. forward 및 동적 그래프 생성
+optimizer.zero_grad()  # 1. 이전 gradient 초기화
+logits = model(inputs)  # 2. forward 및 동적 그래프 생성
 loss = cross_entropy(logits, targets)
-loss.backward()             # 3. 위상 정렬 후 역순 Chain Rule
-optimizer.step()            # 4. 파라미터 갱신
+loss.backward()  # 3. 위상 정렬 후 역순 Chain Rule
+optimizer.step()  # 4. 파라미터 갱신
 ```
 
 ## 모듈 구조
 
 ```text
-neural_engine/
+src/neural_engine/
 ├── core/                   # Tensor, AutoGrad, broadcasting gradient 축소
 ├── nn/                     # Module, 레이어, 활성화, 손실, 초기화
 ├── optim/                  # SGD, Adam, zero_grad
@@ -148,7 +156,7 @@ neural_engine/
 ├── experiments.py          # 공통 XOR 학습
 ├── mnist_training.py       # MNIST 모델·학습·평가
 └── verification.py         # 중앙 차분과 Gradient Check
-tests/                      # unittest 단위·통합 테스트
+tests/                      # pytest 단위·통합 테스트
 logs/                       # 실제 검증·학습 기록
 figures/                    # 초기화 Loss 비교 그래프
 reports/                    # 검증 및 실험 분석
@@ -204,3 +212,14 @@ Adam은 Momentum 계열의 1차 모멘트 `m`과 RMSProp 계열의 2차 모멘�
 | MNIST, 1 epoch test accuracy | `95.21%` | `>= 95%` | PASS |
 
 상세 수치는 `reports/verification_report.md`, `reports/experiment_report.md`와 `logs/`에서 확인할 수 있습니다.
+
+## 검증
+
+```bash
+make check
+make test
+make smoke
+make build
+```
+
+`make test`는 전체 pytest 검사를, `make smoke`는 같은 테스트 중 수치 기울기·설치된 CLI의 짧은 검사를 실행합니다. 임시 경로와 직접 생성한 IDX 입력을 사용해 실제 MNIST 다운로드나 저장된 결과를 변경하지 않습니다. CI도 같은 잠금 파일·정적 검사·테스트·빌드를 수행합니다.
